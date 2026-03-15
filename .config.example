@@ -1,0 +1,6 @@
+WIDTH= (Maze width)
+HEIGHT= (Maze Height)
+ENTRY= (Entry coordinates (x,y))
+EXIT= (Exit coordinates (x,y))
+OUTPUT_FILE= (Output filename)
+PERFECT= (Is the maze perfect?, perfect = one entry and one exit)
