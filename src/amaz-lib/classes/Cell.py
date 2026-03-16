@@ -7,6 +7,12 @@ class Cell(BaseModel):
     def __str__(self) -> str:
         return hex(self.value)
 
+    def set_value(self, value: int) -> None:
+        self.value = value
+
+    def get_value(self) -> int:
+        return self.value
+
     def set_north(self, is_wall: bool) -> None:
         if (is_wall and self.value | 14 == 15) or (
             not is_wall and self.value | 14 != 15
