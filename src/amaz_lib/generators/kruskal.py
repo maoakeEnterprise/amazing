@@ -45,7 +45,7 @@ def merge_sets(sets: list[list[int]], wall: tuple[int, int]) -> None:
             sets.remove(set)
 
 
-def kraskal(
+def kruskal(
     height: int, width: int
 ) -> Generator[np.ndarray, None, np.ndarray]:
     sets = [[i] for i in range(height * width)]
@@ -69,7 +69,7 @@ def kraskal(
 
 def main():
     try:
-        for alg in kraskal(10, 10):
+        for alg in kruskal(10, 10):
             maze = alg
             # print(maze)
             # print()
