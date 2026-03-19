@@ -4,5 +4,4 @@ from .Maze import Maze
 
 class MazeSolver(ABC):
     @abstractmethod
-    @classmethod
-    def solve(cls, maze: Maze) -> str: ...
+    def solve(self, maze: Maze) -> str: ...

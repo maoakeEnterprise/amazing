@@ -7,7 +7,6 @@ requires-python = ">=3.10"
 dependencies = [
     "numpy>=2.2.6",
     "pydantic>=2.12.5",
-    "pytest>=9.0.2",
 ]
 
 
@@ -15,8 +14,12 @@ dependencies = [
 dev = [
     "mypy>=1.19.1",
     "flake8>=7.3.0",
+    "pytest>=9.0.2",
 ]
 
 
 [tool.mypy]
 python_version = "3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
