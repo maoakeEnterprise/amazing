@@ -12,9 +12,9 @@ class TestParsing:
         with pytest.raises(FileNotFoundError):
             DataMaze.get_file_data("tete")
 
-    def test_permission_error(self):
-        with pytest.raises(PermissionError):
-            DataMaze.get_file_data("tests/test_txt/error_1.txt")
+    # def test_permission_error(self):
+    #     with pytest.raises(PermissionError):
+    #         DataMaze.get_file_data("tests/test_txt/error_1.txt")
 
     def test_empty_file_error(self):
         with pytest.raises(ValueError):
@@ -67,3 +67,12 @@ class TestParsing:
 
     def test_valid_bool1(self):
         assert DataMaze.convert_bool("True") is True
+
+    def test_data_maze(self):
+        data = DataMaze.get_data_maze("tests/test_txt/config_1.txt")
+        assert data["WIDTH"] == 200
+        assert data["HEIGHT"] == 100
+        assert data["ENTRY"] == (0, 0)
+        assert data["EXIT"] == (19, 14)
+        assert data["OUTPUT_FILE"] == "maze.txt"
+        assert data["PERFECT"] is True

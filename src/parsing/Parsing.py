@@ -46,6 +46,7 @@ class DataMaze:
             res.update({key: DataMaze.convert_tuple(data[key])})
         for key in key_bool:
             res.update({key: DataMaze.convert_bool(data[key])})
+        res.update({"OUTPUT_FILE": data["OUTPUT_FILE"]})
         return res
 
     @staticmethod
