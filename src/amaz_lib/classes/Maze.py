@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import numpy
 from .Cell import Cell
+from ..MazeGenerator import MazeGenerator
 
 
 @dataclass

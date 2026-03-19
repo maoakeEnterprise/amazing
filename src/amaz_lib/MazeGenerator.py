@@ -1,87 +1,89 @@
+from abc import ABC, abstractmethod
 from typing import Generator
 import numpy as np
 from .classes.Cell import Cell
 import math
 
 
-class MazeGenerator:
-    class Kruskal:
-        @staticmethod
-        def walls_to_maze(
-            walls: list[tuple[int, int]], height: int, width: int
-        ) -> np.ndarray:
-            maze: np.ndarray = np.array(
-                [[Cell(value=0) for _ in range(width)] for _ in range(height)]
-            )
-            for wall in walls:
-                x, y = wall
-                match y - x:
-                    case 1:
-                        maze[math.trunc((x / width))][x % width].set_est(True)
-                        maze[math.trunc((y / width))][y % width].set_west(True)
-                    case width:
-                        maze[math.trunc((x / width))][x % width].set_south(
-                            True
-                        )
-                        maze[math.trunc((y / width))][y % width].set_north(
-                            True
-                        )
-            for x in range(height):
-                for y in range(width):
-                    if x == 0:
-                        maze[x][y].set_north(True)
-                    if x == height - 1:
-                        maze[x][y].set_south(True)
-                    if y == 0:
-                        maze[x][y].set_est(True)
-                    if y == width - 1:
-                        maze[x][y].set_west(True)
-            return maze
+class MazeGenerator(ABC):
+    @abstractmethod
+    @classmethod
+    def generator(
+        cls, height: int, width: int
+    ) -> Generator[np.ndarray, None, np.ndarray]: ...
 
-        @staticmethod
-        def is_in_same_set(
-            sets: list[list[int]], wall: tuple[int, int]
-        ) -> bool:
-            a, b = wall
-            for set in sets:
-                if a in set and b in set:
-                    return True
-                if a in set or b in set:
-                    return False
-            return False
 
-        @staticmethod
-        def merge_sets(sets: list[list[int]], wall: tuple[int, int]) -> None:
-            a, b = wall
-            base_set = None
-            for set in sets:
-                if base_set is None and (a in set or b in set):
-                    base_set = set
-                elif base_set and (a in set or b in set):
-                    base_set += set
-                    sets.remove(set)
+class Kruskal(MazeGenerator):
+    @staticmethod
+    def walls_to_maze(
+        walls: list[tuple[int, int]], height: int, width: int
+    ) -> np.ndarray:
+        maze: np.ndarray = np.array(
+            [[Cell(value=0) for _ in range(width)] for _ in range(height)]
+        )
+        for wall in walls:
+            x, y = wall
+            match y - x:
+                case 1:
+                    maze[math.trunc((x / width))][x % width].set_est(True)
+                    maze[math.trunc((y / width))][y % width].set_west(True)
+                case width:
+                    maze[math.trunc((x / width))][x % width].set_south(True)
+                    maze[math.trunc((y / width))][y % width].set_north(True)
+        for x in range(height):
+            for y in range(width):
+                if x == 0:
+                    maze[x][y].set_north(True)
+                if x == height - 1:
+                    maze[x][y].set_south(True)
+                if y == 0:
+                    maze[x][y].set_est(True)
+                if y == width - 1:
+                    maze[x][y].set_west(True)
+        return maze
 
-        @classmethod
-        def kruskal(
-            cls, height: int, width: int
-        ) -> Generator[np.ndarray, None, np.ndarray]:
-            sets = [[i] for i in range(height * width)]
-            walls = []
-            for h in range(height):
-                for w in range(width - 1):
-                    walls += [(w + (width * h), w + (width * h) + 1)]
-            for w in range(width):
-                for h in range(height - 1):
-                    walls += [(w + (width * h), w + (width * h) + width)]
-            np.random.shuffle(walls)
+    @staticmethod
+    def is_in_same_set(sets: list[list[int]], wall: tuple[int, int]) -> bool:
+        a, b = wall
+        for set in sets:
+            if a in set and b in set:
+                return True
+            if a in set or b in set:
+                return False
+        return False
 
-            yield cls.walls_to_maze(walls, height, width)
-            for wall in walls:
-                if not cls.is_in_same_set(sets, wall):
-                    cls.merge_sets(sets, wall)
-                    walls.remove(wall)
-                    yield cls.walls_to_maze(walls, height, width)
-            return cls.walls_to_maze(walls, height, width)
+    @staticmethod
+    def merge_sets(sets: list[list[int]], wall: tuple[int, int]) -> None:
+        a, b = wall
+        base_set = None
+        for set in sets:
+            if base_set is None and (a in set or b in set):
+                base_set = set
+            elif base_set and (a in set or b in set):
+                base_set += set
+                sets.remove(set)
+
+    @classmethod
+    def generator(
+        cls, height: int, width: int
+    ) -> Generator[np.ndarray, None, np.ndarray]:
+        sets = [[i] for i in range(height * width)]
+        walls = []
+        for h in range(height):
+            for w in range(width - 1):
+                walls += [(w + (width * h), w + (width * h) + 1)]
+        for w in range(width):
+            for h in range(height - 1):
+                walls += [(w + (width * h), w + (width * h) + width)]
+        np.random.shuffle(walls)
+
+        yield cls.walls_to_maze(walls, height, width)
+        for wall in walls:
+            if not cls.is_in_same_set(sets, wall):
+                cls.merge_sets(sets, wall)
+                walls.remove(wall)
+                yield cls.walls_to_maze(walls, height, width)
+        return cls.walls_to_maze(walls, height, width)
 
 
 def main():
