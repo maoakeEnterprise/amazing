@@ -19,13 +19,23 @@ class MazeGenerator:
                     case 1:
                         maze[math.trunc((x / width))][x % width].set_est(True)
                         maze[math.trunc((y / width))][y % width].set_west(True)
-                    case 5:
+                    case width:
                         maze[math.trunc((x / width))][x % width].set_south(
                             True
                         )
                         maze[math.trunc((y / width))][y % width].set_north(
                             True
                         )
+            for x in range(height):
+                for y in range(width):
+                    if x == 0:
+                        maze[x][y].set_north(True)
+                    if x == height - 1:
+                        maze[x][y].set_south(True)
+                    if y == 0:
+                        maze[x][y].set_est(True)
+                    if y == width - 1:
+                        maze[x][y].set_west(True)
             return maze
 
         @staticmethod

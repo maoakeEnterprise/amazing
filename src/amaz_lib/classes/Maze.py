@@ -35,3 +35,26 @@ class Maze:
 
     def solver(self) -> str:
         pass
+
+    def ascii_print(self) -> None:
+        for line in self.maze:
+            if line is self.maze[0]:
+                for cell in line:
+                    print("_", end="")
+                    if cell.get_north():
+                        print("__", end="")
+                    else:
+                        print("  ", end="")
+                print()
+            for cell in line:
+                if cell is line[0] and cell.get_west():
+                    print("|", end="")
+                if cell.get_south() is True:
+                    print("__", end="")
+                else:
+                    print("  ", end="")
+                if cell.get_est() is True:
+                    print("|", end="")
+                else:
+                    print("_", end="")
+            print()
