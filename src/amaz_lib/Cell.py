@@ -41,25 +41,10 @@ class Cell(BaseModel):
         return self.value & 4 == 4
 
     def set_west(self, is_wall: bool) -> None:
-        if (not is_wall and self.value | 8 == 15) or (
-            is_wall and self.value | 8 != 15
+        if (not is_wall and self.value | 7 == 15) or (
+            is_wall and self.value | 7 != 15
         ):
             self.value = self.value ^ (8)
 
     def get_west(self) -> bool:
         return self.value & 8 == 8
-
-
-def main() -> None:
-    c = Cell(value=1)
-    print(c.get_north())
-    c.set_north(True)
-    print(c.get_north())
-    c.set_north(True)
-    print(c.get_north())
-    c.set_north(False)
-    print(c.get_north())
-
-
-if __name__ == "__main__":
-    main()

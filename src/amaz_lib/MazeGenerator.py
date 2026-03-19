@@ -1,15 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Generator
 import numpy as np
-from .classes.Cell import Cell
+from .Cell import Cell
 import math
 
 
 class MazeGenerator(ABC):
     @abstractmethod
-    @classmethod
     def generator(
-        cls, height: int, width: int
+        self, height: int, width: int
     ) -> Generator[np.ndarray, None, np.ndarray]: ...
 
 
@@ -63,9 +62,8 @@ class Kruskal(MazeGenerator):
                 base_set += set
                 sets.remove(set)
 
-    @classmethod
     def generator(
-        cls, height: int, width: int
+        self, height: int, width: int
     ) -> Generator[np.ndarray, None, np.ndarray]:
         sets = [[i] for i in range(height * width)]
         walls = []
@@ -77,13 +75,13 @@ class Kruskal(MazeGenerator):
                 walls += [(w + (width * h), w + (width * h) + width)]
         np.random.shuffle(walls)
 
-        yield cls.walls_to_maze(walls, height, width)
+        yield self.walls_to_maze(walls, height, width)
         for wall in walls:
-            if not cls.is_in_same_set(sets, wall):
-                cls.merge_sets(sets, wall)
+            if not self.is_in_same_set(sets, wall):
+                self.merge_sets(sets, wall)
                 walls.remove(wall)
-                yield cls.walls_to_maze(walls, height, width)
-        return cls.walls_to_maze(walls, height, width)
+                yield self.walls_to_maze(walls, height, width)
+        return self.walls_to_maze(walls, height, width)
 
 
 def main():
