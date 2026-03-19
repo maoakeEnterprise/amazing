@@ -18,5 +18,5 @@ lint-strict:
 	uv run flake8 .
 	uv run mypy . --strict
 
-run_test:
-	PYTHONPATH=src uv run python3 test/test_parsing.py
+run_test_parsing:
+	PYTHONPATH=src uv run pytest tests/test_parsing.py

@@ -1,15 +1,12 @@
 class DataMaze:
 
     @staticmethod
-    def get_data(name_file: str) -> str:
-        data = ""
-        try:
-            with open(name_file, "r") as file:
-                data = file.read()
-        except FileNotFoundError:
-            print("The file do not exist")
-        finally:
-            return data
+    def get_file_data(name_file: str) -> str:
+        with open(name_file, "r") as file:
+            data = file.read()
+        if data == "":
+            raise ValueError("The file is empty")
+        return data
 
     @staticmethod
     def transform_data(data: str) -> dict:
@@ -23,63 +20,77 @@ class DataMaze:
         return data_t
 
     @staticmethod
-    def verif_key_data(data: dict) -> dict:
+    def verif_key_data(data: dict) -> None:
         key_test = {
             "WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"
         }
         set_key = {
             key for key in data.keys()
         }
-        try:
-            res_key = {}
-            if len(set_key) != len(key_test):
-                raise Exception("Missing some data the len do not correspond")
-            res_key = {key for key in set_key if key not in key_test}
-            if len(res_key) != 0:
-                raise Exception("Some Key "
-                                f"do not correspond the keys: {res_key}")
-            return data
-        except Exception as e:
-            print(f"{e}")
-            exit()
+        if len(set_key) != len(key_test):
+            raise KeyError("Missing some data the len do not correspond")
+        res_key = {key for key in set_key if key not in key_test}
+        if len(res_key) != 0:
+            raise KeyError("Some Key "
+                           f"do not correspond the keys: {res_key}")
 
     @staticmethod
-    def verif_value_data(data: dict):
+    def convert_values(data: dict):
         key_int = {"WIDTH", "HEIGHT"}
         key_tuple = {"ENTRY", "EXIT"}
         key_bool = {"PERFECT"}
+        res: dict = {}
+        for key in key_int:
+            res.update({key: int(data[key])})
+        for key in key_tuple:
+            res.update({key: DataMaze.convert_tuple(data[key])})
+        for key in key_bool:
+            res.update({key: DataMaze.convert_bool(data[key])})
+        return res
+
+    @staticmethod
+    def get_data_maze(name_file: str) -> dict:
         try:
-            res: dict = {}
-            for key in key_int:
-                res.update({key: int(data[key])})
-            for key in key_tuple:
-                res.update({key: DataMaze.convert_tuple(data[key])})
-            for key in key_bool:
-                res.update({key: DataMaze.convert_bool(data[key])})
-            return res
+            data_str = DataMaze.get_file_data(name_file)
+            data_dict = DataMaze.transform_data(data_str)
+            DataMaze.verif_key_data(data_dict)
+            data_maze = DataMaze.convert_values(data_dict)
+            return data_maze
+        except FileNotFoundError:
+            print("The file do not exist")
+            exit()
+        except PermissionError:
+            print("We dont have the Permission")
+            exit()
         except ValueError as e:
-            print("Error on the method verif_value_data"
-                  f" in the class DataMaze: {e}")
+            print(f"Error during the convert or the file is empty: {e}")
+            exit()
+        except KeyError as e:
+            print(f"Error on the key in the file: {e}")
+            exit()
+        except IndexError as e:
+            print("In the function transform Data some data cannot "
+                  f"be splited by '=' because '=' was not present: {e}")
+            exit()
+        except AttributeError as e:
+            print("Error on the "
+                  f"funciton get_data_maze : {e}")
+            exit()
 
     @staticmethod
     def convert_tuple(data: str) -> tuple:
-        try:
-            data_t = data.split(",")
-            x, y = data_t
-            tup = (int(x), int(y))
-            return tup
-        except ValueError as e:
-            print(f"On the convert Tuple: {e}")
-            exit()
+        data_t = data.split(",")
+        if len(data_t) != 2:
+            raise ValueError("There is too much "
+                             "argument in the coordinate given")
+        x, y = data_t
+        tup = (int(x), int(y))
+        return tup
 
     @staticmethod
     def convert_bool(data: str) -> bool:
-        try:
-            if data != "True" and data != "False":
-                raise ValueError("This is not True or False")
-            if data == "True":
-                return True
-            return False
-        except ValueError as e:
-            print(f"Error on the convert_bool in class DataMaze: {e}")
-            exit()
+        if data != "True" and data != "False":
+            raise ValueError("This is not True or False")
+        if data == "True":
+            return True
+        return False
