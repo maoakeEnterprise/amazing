@@ -1,0 +1,31 @@
+import numpy
+from amaz_lib.Cell import Cell
+from amaz_lib.Maze import Maze
+
+
+def test_maze_setter_getter() -> None:
+    maze = Maze(numpy.array([]))
+
+    test = numpy.array(
+        [
+            [Cell(value=6), Cell(value=8), Cell(value=11)],
+            [Cell(value=6), Cell(value=8), Cell(value=11)],
+            [Cell(value=6), Cell(value=8), Cell(value=11)],
+        ]
+    )
+
+    maze.set_maze(test)
+    assert numpy.array_equal(maze.get_maze(), test) == True
+
+
+def test_maze_str() -> None:
+    test = numpy.array(
+        [
+            [Cell(value=6), Cell(value=8), Cell(value=11)],
+            [Cell(value=6), Cell(value=8), Cell(value=11)],
+            [Cell(value=6), Cell(value=8), Cell(value=11)],
+        ]
+    )
+    maze = Maze(test)
+
+    assert maze.__str__() == "68B\n68B\n68B\n"

@@ -25,10 +25,6 @@ class Maze:
             res += "\n"
         return res
 
-    def export_maze(self, file_name: str) -> None:
-        with open(file_name, "w") as file:
-            file.write(self.__str__())
-
     def ascii_print(self) -> None:
         for line in self.maze:
             if line is self.maze[0]:
