@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Generator
 import numpy as np
-from .classes.Cell import Cell
+from .Cell import Cell
 import math
 
 
