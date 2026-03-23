@@ -129,19 +129,19 @@ class DepthFirstSearch:
         x, y = coord
         width, height = w_h
         # NORTH
-        if y - 1 >= 0 and coord not in visited:
+        if y - 1 >= 0 and (x, y - 1) not in visited:
             rand_cell.append("N")
 
         # SOUTH
-        if y + 1 < height and coord not in visited:
+        if y + 1 < height and (x, y + 1) not in visited:
             rand_cell.append("S")
 
         # WEST
-        if x - 1 >= 0 and coord not in visited:
+        if x - 1 >= 0 and (x - 1, y) not in visited:
             rand_cell.append("W")
 
         # EAST
-        if x + 1 < width and coord not in visited:
+        if x + 1 < width and (x + 1, y) not in visited:
             rand_cell.append("E")
         return rand_cell
 
@@ -183,7 +183,7 @@ class DepthFirstSearch:
 
     @staticmethod
     def last(path: list):
-        return path(len(path) - 1)
+        return path[len(path) - 1]
 
     def back_on_step(path: list, w_h: tuple) -> list:
         last = DepthFirstSearch.last(path)
