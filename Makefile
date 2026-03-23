@@ -20,3 +20,6 @@ lint-strict:
 
 run_test_parsing:
 	PYTHONPATH=src uv run pytest tests/test_parsing.py
+
+run_test_dfs:
+	PYTHONPATH=src uv run pytest tests/test_Depth.py
