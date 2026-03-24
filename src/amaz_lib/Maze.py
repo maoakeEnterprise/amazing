@@ -26,15 +26,14 @@ class Maze:
         return res
 
     def ascii_print(self) -> None:
+        for cell in self.maze[0]:
+            print("_", end="")
+            if cell.get_north():
+                print("__", end="")
+            else:
+                print("  ", end="")
+        print("_")
         for line in self.maze:
-            if line is self.maze[0]:
-                for cell in line:
-                    print("_", end="")
-                    if cell.get_north():
-                        print("__", end="")
-                    else:
-                        print("  ", end="")
-                print()
             for cell in line:
                 if cell is line[0] and cell.get_west():
                     print("|", end="")

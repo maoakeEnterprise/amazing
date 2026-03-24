@@ -10,10 +10,10 @@ def main() -> None:
     generator = Kruskal()
     for alg in generator.generator(20, 20):
         maze.set_maze(alg)
-        os.system("clear")
+        # os.system("clear")
         maze.ascii_print()
-    solver = AStar((1, 1), (14, 18))
-    print(solver.solve(maze))
+    # solver = AStar((1, 1), (14, 18))
+    # print(solver.solve(maze))
 
 
 # except Exception as err:

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Generator
+from dataclasses import dataclass
+from typing import Generator, Set
 import numpy as np
 from .Cell import Cell
 import math
@@ -13,9 +14,13 @@ class MazeGenerator(ABC):
 
 
 class Kruskal(MazeGenerator):
+    class Set:
+        def __init__(self, cells: list[int]) -> None:
+            self.cells: list[int] = cells
+
     @staticmethod
     def walls_to_maze(
-        walls: list[tuple[int, int]], height: int, width: int
+        walls: np.ndarray, height: int, width: int
     ) -> np.ndarray:
         maze: np.ndarray = np.array(
             [[Cell(value=0) for _ in range(width)] for _ in range(height)]
@@ -36,43 +41,46 @@ class Kruskal(MazeGenerator):
                 if x == height - 1:
                     maze[x][y].set_south(True)
                 if y == 0:
-                    maze[x][y].set_est(True)
-                if y == width - 1:
                     maze[x][y].set_west(True)
+                if y == width - 1:
+                    maze[x][y].set_est(True)
         return maze
 
     @staticmethod
-    def is_in_same_set(sets: list[list[int]], wall: tuple[int, int]) -> bool:
+    def is_in_same_set(sets: np.ndarray, wall: tuple[int, int]) -> bool:
         a, b = wall
         for set in sets:
-            if a in set and b in set:
+            if a in set.cells and b in set.cells:
                 return True
-            if a in set or b in set:
+            elif a in set.cells or b in set.cells:
                 return False
         return False
 
     @staticmethod
-    def merge_sets(sets: list[list[int]], wall: tuple[int, int]) -> None:
+    def merge_sets(sets: np.ndarray, wall: tuple[int, int]) -> None:
         a, b = wall
         base_set = None
-        for set in sets:
-            if base_set is None and (a in set or b in set):
-                base_set = set
-            elif base_set and (a in set or b in set):
-                base_set += set
-                sets.remove(set)
+        for i in range(len(sets)):
+            if base_set is None and (a in sets[i].cells or b in sets[i].cells):
+                base_set = sets[i]
+            elif base_set and (a in sets[i].cells or b in sets[i].cells):
+                base_set.cells += sets[i].cells
+                np.delete(sets, i)
+                return
+        raise Exception("two sets not found")
 
     def generator(
         self, height: int, width: int
     ) -> Generator[np.ndarray, None, np.ndarray]:
-        sets = [[i] for i in range(height * width)]
+        sets = np.array([self.Set([i]) for i in range(height * width)])
         walls = []
         for h in range(height):
             for w in range(width - 1):
                 walls += [(w + (width * h), w + (width * h) + 1)]
-        for w in range(width):
-            for h in range(height - 1):
-                walls += [(w + (width * h), w + (width * h) + width)]
+        for h in range(height - 1):
+            for w in range(width):
+                walls += [(w + (width * h), w + (width * (h + 1)))]
+        print(walls)
         np.random.shuffle(walls)
 
         yield self.walls_to_maze(walls, height, width)
@@ -81,20 +89,5 @@ class Kruskal(MazeGenerator):
                 self.merge_sets(sets, wall)
                 walls.remove(wall)
                 yield self.walls_to_maze(walls, height, width)
+        print(f"nb sets: {len(sets)}")
         return self.walls_to_maze(walls, height, width)
-
-
-def main():
-    try:
-        for alg in MazeGenerator.Kruskal.kruskal(10, 10):
-            maze = alg
-            # print(maze)
-            # print()
-        print(maze)
-
-    except GeneratorExit as maze:
-        print(maze)
-
-
-if __name__ == "__main__":
-    main()
