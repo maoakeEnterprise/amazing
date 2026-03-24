@@ -53,25 +53,25 @@ class AStar(MazeSolver):
         print(actual)
         path = {
             "N": (
-                self.f((actual[0], actual[1] - 1))
-                if not maze[actual[0]][actual[1]].get_north() and actual[1] > 0
+                self.f((actual[1] - 1, actual[0]))
+                if not maze[actual[1]][actual[0]].get_north() and actual[0] > 0
                 else None
             ),
             "E": (
-                self.f((actual[0] + 1, actual[1]))
-                if not maze[actual[0]][actual[1]].get_est()
-                and actual[0] < len(maze) - 1
+                self.f((actual[1], actual[0] + 1))
+                if not maze[actual[1]][actual[0]].get_est()
+                and actual[1] < len(maze) - 1
                 else None
             ),
             "S": (
-                self.f((actual[0], actual[1] + 1))
-                if not maze[actual[0]][actual[1]].get_south()
-                and actual[1] < len(maze[0]) - 1
+                self.f((actual[1] + 1, actual[0]))
+                if not maze[actual[1]][actual[0]].get_south()
+                and actual[0] < len(maze) - 1
                 else None
             ),
             "W": (
-                self.f((actual[0] - 1, actual[1]))
-                if not maze[actual[0]][actual[1]].get_west() and actual[0] > 0
+                self.f((actual[1], actual[0] - 1))
+                if not maze[actual[1]][actual[0]].get_west() and actual[1] > 0
                 else None
             ),
         }
@@ -107,23 +107,10 @@ class AStar(MazeSolver):
             case _:
                 return actual
 
-    def get_path(
-        self, actual: tuple[int, int], maze: np.ndarray, pre: str | None
-    ) -> str | None:
-        if actual == self.end:
-            return ""
-        paths = self.best_path(maze, actual)
-        for path in paths:
-            if paths[path] is None:
-                continue
-            if path != pre:
-                temp = self.get_path(
-                    self.get_next_pos(path, actual),
-                    maze,
-                    self.get_opposit(path),
-                )
-                if not temp is None:
-                    return path + temp
+    def get_path(self, maze: np.ndarray) -> str | None:
+        actual = self.start
+        path = ""
+
         return None
 
     def solve(self, maze: Maze) -> str:

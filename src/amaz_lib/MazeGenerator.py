@@ -102,3 +102,112 @@ class Kruskal(MazeGenerator):
                     break
         print(f"nb sets: {len(sets.sets)}")
         return self.walls_to_maze(walls, height, width)
+
+
+class DepthFirstSearch(MazeGenerator):
+
+    def generator(
+        self, width: int, height: int
+    ) -> Generator[np.ndarray, None, np.ndarray]:
+        maze = DepthFirstSearch.init_maze(width, height)
+        visited = np.zeros((height, width), dtype=bool)
+        path = list()
+        w_h = (width, height)
+        coord = (0, 0)
+        x, y = coord
+        first = True
+
+        while path or first:
+            first = False
+            visited[y, x] = True
+            path = DepthFirstSearch.add_cell_visited(coord, path)
+            random_c = DepthFirstSearch.random_cells(visited, coord, w_h)
+            if len(random_c) == 0:
+                path = DepthFirstSearch.back_on_step(path, w_h, visited)
+                if path:
+                    coord = path[-1]
+                random_c = DepthFirstSearch.random_cells(visited, coord, w_h)
+                x, y = coord
+                if not path:
+                    break
+
+            wall = DepthFirstSearch.next_step(random_c)
+            maze[y][x] = DepthFirstSearch.broken_wall(maze[y][x], wall)
+
+            coord = DepthFirstSearch.next_cell(x, y, wall)
+            wall_r = DepthFirstSearch.reverse_path(wall)
+            x, y = coord
+            maze[y][x] = DepthFirstSearch.broken_wall(maze[y][x], wall_r)
+            yield maze
+        return maze
+
+    @staticmethod
+    def init_maze(width: int, height: int) -> np.ndarray:
+        maze = np.array(
+            [[Cell(value=15) for _ in range(width)] for _ in range(height)]
+        )
+        return maze
+
+    @staticmethod
+    def add_cell_visited(coord: tuple, path: set) -> list:
+        path.append(coord)
+        return path
+
+    @staticmethod
+    def random_cells(visited: np.array, coord: tuple, w_h: tuple) -> list:
+        rand_cell = []
+        x, y = coord
+        width, height = w_h
+
+        if y - 1 >= 0 and not visited[y - 1][x]:
+            rand_cell.append("N")
+
+        if y + 1 < height and not visited[y + 1][x]:
+            rand_cell.append("S")
+
+        if x - 1 >= 0 and not visited[y][x - 1]:
+            rand_cell.append("W")
+
+        if x + 1 < width and not visited[y][x + 1]:
+            rand_cell.append("E")
+        return rand_cell
+
+    @staticmethod
+    def next_step(rand_cell: list) -> str:
+        return np.random.choice(rand_cell)
+
+    @staticmethod
+    def broken_wall(cell: Cell, wall: str) -> Cell:
+        if wall == "N":
+            cell.set_north(False)
+        elif wall == "S":
+            cell.set_south(False)
+        elif wall == "W":
+            cell.set_west(False)
+        elif wall == "E":
+            cell.set_est(False)
+        return cell
+
+    @staticmethod
+    def next_cell(x: int, y: int, next: str) -> tuple:
+        next_step = {"N": (0, -1), "S": (0, 1), "W": (-1, 0), "E": (1, 0)}
+        add_x, add_y = next_step[next]
+        return (x + add_x, y + add_y)
+
+    @staticmethod
+    def reverse_path(next: str) -> str:
+        reverse = {"N": "S", "S": "N", "W": "E", "E": "W"}
+        return reverse[next]
+
+    @staticmethod
+    def back_on_step(path: list, w_h: tuple, visited: np.array) -> list:
+        last = path[-1]
+        r_cells = DepthFirstSearch.random_cells(visited, last, w_h)
+        while len(path) > 0:
+            path.pop()
+            if path:
+                last = path[-1]
+            r_cells = DepthFirstSearch.random_cells(visited, last, w_h)
+            if r_cells:
+                break
+        return path

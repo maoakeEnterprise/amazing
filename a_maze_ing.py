@@ -1,10 +1,10 @@
 import os
-from numpy import ma
-from src.amaz_lib import MazeGenerator, Kruskal, AStar
 from src.amaz_lib import Maze
+from src.amaz_lib import MazeGenerator
+import src.amaz_lib as g
 
 
-def main() -> None:
+def main(maze_gen: MazeGenerator) -> None:
     # try:
     maze = Maze(maze=None)
     generator = Kruskal()
@@ -21,4 +21,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(g.DepthFirstSearch())
