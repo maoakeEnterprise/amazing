@@ -8,9 +8,9 @@ def main() -> None:
     # try:
     maze = Maze(maze=None)
     generator = Kruskal()
-    for alg in generator.generator(20, 20):
+    for alg in generator.generator(50, 50):
         maze.set_maze(alg)
-        # os.system("clear")
+        os.system("clear")
         maze.ascii_print()
     # solver = AStar((1, 1), (14, 18))
     # print(solver.solve(maze))
