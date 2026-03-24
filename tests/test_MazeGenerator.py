@@ -1,19 +1,14 @@
 import numpy
 from amaz_lib.MazeGenerator import DepthFirstSearch
-from amaz_lib.MazeGenerator import Kruskal
 
 
 class TestMazeGenerator:
 
-    def test_kruskal_output_shape() -> None:
-        generator = Kruskal().generator(10, 10)
+    def test_generator(self) -> None:
+        w_h = (300, 300)
         maze = numpy.array([])
+        generator = DepthFirstSearch().generator(*w_h)
         for output in generator:
             maze = output
 
-        assert maze.shape == (10, 10)
-
-    def test_generator(self) -> None:
-        maze = numpy.array([])
-        maze = DepthFirstSearch.generator(10, 10)
-        assert maze.shape == (10, 10)
+        assert maze.shape == w_h

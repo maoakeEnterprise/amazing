@@ -1,8 +1,10 @@
-from pydantic import BaseModel, Field
+from dataclasses import dataclass
 
 
-class Cell(BaseModel):
-    value: int = Field(ge=0, le=15)
+@dataclass
+class Cell:
+    def __init__(self, value: int) -> None:
+        self.value = value
 
     def __str__(self) -> str:
         return hex(self.value).removeprefix("0x").upper()
