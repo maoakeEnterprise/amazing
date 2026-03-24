@@ -94,26 +94,22 @@ class DepthFirstSearch:
         path = list()
         w_h = (width, height)
         coord = (0, 0)
+        x, y = coord
+
         while len(visited) < width * height:
-            print(f"visited {len(visited)}")
-            x, y = coord
-            rand_steps = DepthFirstSearch.random_cells(visited, coord, w_h)
-            if len(rand_steps) == 0:
-                path = DepthFirstSearch.back_on_step(path, w_h, visited)
-                coord = path[-1]
-                rand_steps = DepthFirstSearch.random_cells(path, coord, w_h)
-                print(f"coord {coord}")
-                print(f"visited = {visited}")
-                print(f" rand steps {rand_steps}")
-                print(f"path = {path}")
-                x, y = coord
-            wall = DepthFirstSearch.next_step(rand_steps)
-            wall_r = DepthFirstSearch.reverse_path(wall)
-            maze[y][x] = DepthFirstSearch.broken_wall(maze[y][x], wall)
             visited = DepthFirstSearch.add_cell_visited(coord, visited)
             path = DepthFirstSearch.add_cell_visited(coord, path)
+            random_c = DepthFirstSearch.random_cells(visited, coord, w_h)
+            if len(random_c) == 0:
+                path = DepthFirstSearch.back_on_step(path, w_h, visited)
+                if path:
+                    coord = path[-1]
+                random_c = DepthFirstSearch.random_cells(path, coord, w_h)
+                x, y = coord
+            wall = DepthFirstSearch.next_step(random_c)
+            maze[y][x] = DepthFirstSearch.broken_wall(maze[y][x], wall)
             coord = DepthFirstSearch.next_cell(x, y, wall)
-            print(f"coord 2 {coord}")
+            wall_r = DepthFirstSearch.reverse_path(wall)
             x, y = coord
             maze[y][x] = DepthFirstSearch.broken_wall(maze[y][x], wall_r)
         return maze
@@ -196,11 +192,10 @@ class DepthFirstSearch:
         last = path[-1]
         r_cells = DepthFirstSearch.random_cells(visited,  last, w_h)
         while len(path) > 0:
-            print(f"path {len(path)}")
             path.pop()
-            last = path[-1]
+            if path:
+                last = path[-1]
             r_cells = DepthFirstSearch.random_cells(visited,  last, w_h)
             if r_cells:
-                print(f"cells {len(r_cells)}")
                 break
         return path
