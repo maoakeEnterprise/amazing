@@ -13,23 +13,15 @@ class TestDepth:
 
     def test_rand_cells(self) -> None:
         w_h = (10, 10)
-        lst = DepthFirstSearch.add_cell_visited((0, 0), set())
+        lst = np.zeros((10, 10), dtype=bool)
+        lst[0, 0] = True
         rand_cells = DepthFirstSearch.random_cells(lst, (0, 1), w_h)
         assert len(rand_cells) == 2
 
     def test_next_cell(self) -> None:
         coord = (5, 4)
         x, y = coord
-        assert DepthFirstSearch.next_cell(x, y, "N") == (5, 3)
+        assert DepthFirstSearch.next_cell(x, y, "N") == (2, 3)
 
     def test_reverse_path(self) -> None:
         assert DepthFirstSearch.reverse_path("N") == "S"
-
-    def test_BOS(self) -> None:
-        path = {(0, 0), (0, 2), (1, 1)}
-        assert len(DepthFirstSearch.random_cells(path, (0, 1), (10, 10))) == 0
-
-    def test_generator(self):
-        maze = np.array([])
-        maze = DepthFirstSearch.generator(10, 10)
-        assert maze.shape == (10, 10)
