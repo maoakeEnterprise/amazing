@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Generator, Set
 import numpy as np
 from .Cell import Cell
@@ -107,7 +106,7 @@ class Kruskal(MazeGenerator):
 class DepthFirstSearch(MazeGenerator):
 
     def generator(
-        self, width: int, height: int
+        self, height: int, width: int
     ) -> Generator[np.ndarray, None, np.ndarray]:
         maze = DepthFirstSearch.init_maze(width, height)
         visited = np.zeros((height, width), dtype=bool)
