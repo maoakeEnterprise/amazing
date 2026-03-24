@@ -90,17 +90,22 @@ class DepthFirstSearch:
     @staticmethod
     def generator(width: int, height: int) -> np.ndarray:
         maze = DepthFirstSearch.init_maze(width, height)
-        visited = []
-        path = []
+        visited = set()
+        path = list()
         w_h = (width, height)
         coord = (0, 0)
         while len(visited) < width * height:
+            print(f"visited {len(visited)}")
             x, y = coord
             rand_steps = DepthFirstSearch.random_cells(visited, coord, w_h)
             if len(rand_steps) == 0:
-                path = DepthFirstSearch.back_on_step(path, w_h)
-                coord = DepthFirstSearch.last(path)
+                path = DepthFirstSearch.back_on_step(path, w_h, visited)
+                coord = path[-1]
                 rand_steps = DepthFirstSearch.random_cells(path, coord, w_h)
+                print(f"coord {coord}")
+                print(f"visited = {visited}")
+                print(f" rand steps {rand_steps}")
+                print(f"path = {path}")
                 x, y = coord
             wall = DepthFirstSearch.next_step(rand_steps)
             wall_r = DepthFirstSearch.reverse_path(wall)
@@ -108,6 +113,7 @@ class DepthFirstSearch:
             visited = DepthFirstSearch.add_cell_visited(coord, visited)
             path = DepthFirstSearch.add_cell_visited(coord, path)
             coord = DepthFirstSearch.next_cell(x, y, wall)
+            print(f"coord 2 {coord}")
             x, y = coord
             maze[y][x] = DepthFirstSearch.broken_wall(maze[y][x], wall_r)
         return maze
@@ -119,12 +125,15 @@ class DepthFirstSearch:
         return maze
 
     @staticmethod
-    def add_cell_visited(coord: tuple, visited: list = []) -> list:
-        visited.append(coord)
+    def add_cell_visited(coord: tuple, visited: list | set) -> list | set:
+        if isinstance(visited, list):
+            visited.append(coord)
+        if isinstance(visited, set):
+            visited.add(coord)
         return visited
 
     @staticmethod
-    def random_cells(visited: list, coord: tuple, w_h: tuple) -> list:
+    def random_cells(visited: set, coord: tuple, w_h: tuple) -> list:
         rand_cell = []
         x, y = coord
         width, height = w_h
@@ -172,6 +181,7 @@ class DepthFirstSearch:
         add_x, add_y = next_step[next]
         return (x + add_x, y + add_y)
 
+    @staticmethod
     def reverse_path(next: str) -> str:
         reverse = {
             "N": "S",
@@ -182,14 +192,15 @@ class DepthFirstSearch:
         return reverse[next]
 
     @staticmethod
-    def last(path: list):
-        return path[len(path) - 1]
-
-    def back_on_step(path: list, w_h: tuple) -> list:
-        last = DepthFirstSearch.last(path)
-        r_cells = DepthFirstSearch.random_cells(path,  last, w_h)
-        while len(r_cells == 0):
-            path.pop(len(path) - 1)
-            last = DepthFirstSearch.last(path)
-            r_cells = DepthFirstSearch.random_cells(path,  last, w_h)
+    def back_on_step(path: list, w_h: tuple, visited: set) -> list:
+        last = path[-1]
+        r_cells = DepthFirstSearch.random_cells(visited,  last, w_h)
+        while len(path) > 0:
+            print(f"path {len(path)}")
+            path.pop()
+            last = path[-1]
+            r_cells = DepthFirstSearch.random_cells(visited,  last, w_h)
+            if r_cells:
+                print(f"cells {len(r_cells)}")
+                break
         return path

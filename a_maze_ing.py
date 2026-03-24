@@ -1,6 +1,6 @@
 import os
-from numpy import ma
 from src.amaz_lib import MazeGenerator
+from src.amaz_lib import DepthFirstSearch
 from src.amaz_lib import Maze
 
 
@@ -14,9 +14,13 @@ def main() -> None:
     maze.export_maze("test.txt")
 
 
+def main2() -> None:
+    DepthFirstSearch.generator(5, 5)
+
+
 # except Exception as err:
 # print(err)
 
 
 if __name__ == "__main__":
-    main()
+    main2()
