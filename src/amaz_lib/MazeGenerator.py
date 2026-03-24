@@ -216,3 +216,11 @@ class DepthFirstSearch(MazeGenerator):
             for dx in range(x, x + 11):
                 visited[dy, dx] = True
         return visited
+
+    @staticmethod
+    def draw_ft(maze: np.ndarray, coord: tuple):
+        x, y = coord
+        for dy in range(y, y + 7):
+            for dx in range(x, x + 11):
+                maze[dy][dx] = Cell(value=0)
+        return maze
