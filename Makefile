@@ -19,4 +19,4 @@ lint-strict:
 	uv run mypy . --strict
 
 run_test:
-	PYTHONPATH=src uv run python3 test/test_parsing.py
+	uv run pytest
