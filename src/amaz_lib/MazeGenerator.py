@@ -84,10 +84,10 @@ class Kruskal(MazeGenerator):
         return self.walls_to_maze(walls, height, width)
 
 
-class DepthFirstSearch:
+class DepthFirstSearch(MazeGenerator):
 
-    @staticmethod
-    def generator(width: int, height: int) -> np.ndarray:
+    def generator(self, width: int, height: int
+                  ) -> Generator[np.ndarray, None, np.ndarray]:
         maze = DepthFirstSearch.init_maze(width, height)
         visited = np.zeros((height, width), dtype=bool)
         path = list()
@@ -117,6 +117,7 @@ class DepthFirstSearch:
             wall_r = DepthFirstSearch.reverse_path(wall)
             x, y = coord
             maze[y][x] = DepthFirstSearch.broken_wall(maze[y][x], wall_r)
+            yield maze
         return maze
 
     @staticmethod

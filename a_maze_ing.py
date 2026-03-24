@@ -1,30 +1,21 @@
 import os
-from src.amaz_lib import Kruskal
-from src.amaz_lib import DepthFirstSearch
 from src.amaz_lib import Maze
+from src.amaz_lib import MazeGenerator
+import src.amaz_lib as g
 
 
-def main() -> None:
+def main(maze_gen: MazeGenerator) -> None:
     # try:
     maze = Maze(maze=None)
-    gen = Kruskal().generator(10, 10)
+    gen = maze_gen.generator(100, 100)
     for alg in gen:
         maze.set_maze(alg)
         os.system("clear")
         maze.ascii_print()
-
-
-def main2() -> None:
-    maze = Maze(maze=None)
-    gen = DepthFirstSearch.generator(50, 50)
-    maze.set_maze(gen)
-    os.system("clear")
-    maze.ascii_print()
-
 
 # except Exception as err:
 # print(err)
 
 
 if __name__ == "__main__":
-    main2()
+    main(g.DepthFirstSearch())
