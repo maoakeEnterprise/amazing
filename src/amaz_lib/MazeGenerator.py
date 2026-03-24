@@ -108,35 +108,38 @@ class DepthFirstSearch(MazeGenerator):
     def generator(
         self, height: int, width: int
     ) -> Generator[np.ndarray, None, np.ndarray]:
-        maze = DepthFirstSearch.init_maze(width, height)
+        maze = self.init_maze(width, height)
         visited = np.zeros((height, width), dtype=bool)
         path = list()
         w_h = (width, height)
         coord = (0, 0)
         x, y = coord
-        first = True
+        first_iteration = True
+        visited = self.lock_cell_ft(visited, (10, 10))
 
-        while path or first:
-            first = False
+        while path or first_iteration:
+            first_iteration = False
+
             visited[y, x] = True
-            path = DepthFirstSearch.add_cell_visited(coord, path)
-            random_c = DepthFirstSearch.random_cells(visited, coord, w_h)
-            if len(random_c) == 0:
-                path = DepthFirstSearch.back_on_step(path, w_h, visited)
-                if path:
-                    coord = path[-1]
-                random_c = DepthFirstSearch.random_cells(visited, coord, w_h)
-                x, y = coord
+            path = self.add_cell_visited(coord, path)
+
+            random_c = self.random_cells(visited, coord, w_h)
+
+            if not random_c:
+                path = self.back_on_step(path, w_h, visited)
                 if not path:
                     break
+                coord = path[-1]
+                random_c = self.random_cells(visited, coord, w_h)
+                x, y = coord
 
-            wall = DepthFirstSearch.next_step(random_c)
-            maze[y][x] = DepthFirstSearch.broken_wall(maze[y][x], wall)
+            wall = self.next_step(random_c)
+            maze[y][x] = self.broken_wall(maze[y][x], wall)
 
-            coord = DepthFirstSearch.next_cell(x, y, wall)
-            wall_r = DepthFirstSearch.reverse_path(wall)
+            coord = self.next_cell(x, y, wall)
+            wall_r = self.reverse_path(wall)
             x, y = coord
-            maze[y][x] = DepthFirstSearch.broken_wall(maze[y][x], wall_r)
+            maze[y][x] = self.broken_wall(maze[y][x], wall_r)
             yield maze
         return maze
 
@@ -194,19 +197,22 @@ class DepthFirstSearch(MazeGenerator):
         return (x + add_x, y + add_y)
 
     @staticmethod
-    def reverse_path(next: str) -> str:
-        reverse = {"N": "S", "S": "N", "W": "E", "E": "W"}
-        return reverse[next]
+    def reverse_path(direction: str) -> str:
+        return {"N": "S", "S": "N", "W": "E", "E": "W"}[direction]
 
     @staticmethod
     def back_on_step(path: list, w_h: tuple, visited: np.array) -> list:
-        last = path[-1]
-        r_cells = DepthFirstSearch.random_cells(visited, last, w_h)
-        while len(path) > 0:
-            path.pop()
-            if path:
-                last = path[-1]
-            r_cells = DepthFirstSearch.random_cells(visited, last, w_h)
-            if r_cells:
+        while path:
+            last = path[-1]
+            if DepthFirstSearch.random_cells(visited, last, w_h):
                 break
+            path.pop()
         return path
+
+    @staticmethod
+    def lock_cell_ft(visited: np.ndarray, coord: tuple) -> np.ndarray:
+        x, y = coord
+        for dy in range(y, y + 7):
+            for dx in range(x, x + 11):
+                visited[dy, dx] = True
+        return visited

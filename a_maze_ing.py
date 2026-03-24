@@ -7,7 +7,7 @@ import src.amaz_lib as g
 def main(maze_gen: MazeGenerator) -> None:
     # try:
     maze = Maze(maze=None)
-    for alg in maze_gen.generator(30, 10):
+    for alg in maze_gen.generator(30, 30):
         maze.set_maze(alg)
         os.system("clear")
         maze.ascii_print()
