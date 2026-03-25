@@ -58,7 +58,7 @@ class MazeGenerator(ABC):
             "W": "E",
             "E": "W"
         }
-        min_break = 3
+        min_break = 2
         while True:
             count = 0
             for y in range(height):

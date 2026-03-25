@@ -8,8 +8,8 @@ from src.amaz_lib import Maze, MazeGenerator, MazeSolver
 class AMazeIng(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    width: int = Field(ge=3)
-    height: int = Field(ge=3)
+    width: int = Field(ge=4)
+    height: int = Field(ge=4)
     entry: tuple[int, int]
     exit: tuple[int, int]
     output_file: str = Field(min_length=3)

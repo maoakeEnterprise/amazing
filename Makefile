@@ -4,6 +4,9 @@ install:
 run: install
 	uv run python3 a_maze_ing.py config.txt
 
+run_windows:
+	.venv\Scripts\python -m a_maze_ing config.txt
+
 debug:
 	uv pdb python3 a_maze_ing.py config.txt
 
