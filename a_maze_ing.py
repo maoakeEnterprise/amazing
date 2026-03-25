@@ -7,7 +7,7 @@ import src.amaz_lib as g
 def main(maze_gen: MazeGenerator) -> None:
     # try:
     maze = Maze(maze=None)
-    solver = g.DepthFirstSearchSolver((1, 1), (5, 8))
+    solver = g.DepthFirstSearchSolver((1, 1), (8, 5))
     for alg in maze_gen.generator(15, 15):
         maze.set_maze(alg)
         os.system("clear")
@@ -22,4 +22,4 @@ def main(maze_gen: MazeGenerator) -> None:
 
 
 if __name__ == "__main__":
-    main(g.DepthFirstSearch())
+    main(g.DepthFirstSearch((1, 1), (8, 5)))

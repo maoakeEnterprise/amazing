@@ -124,7 +124,8 @@ class AStar(MazeSolver):
 
 class DepthFirstSearchSolver(MazeSolver):
     def __init__(self, start, end):
-        super().__init__(start, end)
+        self.start = (start[1] - 1, start[0] - 1)
+        self.end = (end[1] - 1, end[0] - 1)
 
     def solve(self, maze: Maze, height: int = None,
               width: int = None) -> str:

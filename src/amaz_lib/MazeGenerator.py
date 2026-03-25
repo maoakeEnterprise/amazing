@@ -6,6 +6,11 @@ import math
 
 
 class MazeGenerator(ABC):
+    def __init__(self, start: tuple, end: tuple, perfect: bool) -> None:
+        self.start = (start[0] - 1, start[1] - 1)
+        self.end = (end[0] - 1, end[1] - 1)
+        self.bool = bool
+
     @abstractmethod
     def generator(
         self, height: int, width: int, seed: int = None
@@ -34,6 +39,27 @@ class MazeGenerator(ABC):
         forty_two.add((y + 2, x + 2))
         forty_two.add((y + 2, x + 3))
         return forty_two
+
+    @staticmethod
+    def unperfect_maze(width: int, height: int,
+                       maze: np.ndarray, forty_two: set
+                       ) -> Generator[np.ndarray, None, np.ndarray]:
+        broken_set = DepthFirstSearch.gen_broken_set(width, height)
+        final_set = broken_set.difference(forty_two)
+        for coord in broken_set:
+            yield maze
+        return broken_set
+
+    @staticmethod
+    def gen_broken_set(width: int, height: int) -> set:
+        maxi = int(width * height * 0.1)
+        points = set()
+        while len(points) < maxi:
+            points.add(
+                (np.random.randint(low=1, high=(width - 1)),
+                 np.random.randint(low=1, high=(height - 1)))
+            )
+        return points
 
 
 class Kruskal(MazeGenerator):
@@ -130,6 +156,10 @@ class Kruskal(MazeGenerator):
 
 
 class DepthFirstSearch(MazeGenerator):
+    def __init__(self, start: bool, end: bool, perfect: bool) -> None:
+        self.start = start
+        self.end = end
+        self.perfect = perfect
 
     def generator(
         self, height: int, width: int, seed: int = None
@@ -139,7 +169,8 @@ class DepthFirstSearch(MazeGenerator):
         maze = self.init_maze(width, height)
         forty_two = self.get_cell_ft(width, height)
         visited = np.zeros((height, width), dtype=bool)
-        visited = self.lock_cell_ft(visited, forty_two)
+        if self.start not in forty_two and self.end not in forty_two:
+            visited = self.lock_cell_ft(visited, forty_two)
         path = list()
         w_h = (width, height)
         coord = (0, 0)
