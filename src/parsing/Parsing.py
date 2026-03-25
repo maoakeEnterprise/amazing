@@ -1,3 +1,7 @@
+from src.amaz_lib.MazeGenerator import DepthFirstSearch, Kruskal
+from src.amaz_lib.MazeSolver import AStar
+
+
 class DataMaze:
 
     @staticmethod
@@ -11,28 +15,30 @@ class DataMaze:
     @staticmethod
     def transform_data(data: str) -> dict:
         tmp = data.split("\n")
-        tmp2 = [
-            value.split("=", 1) for value in tmp
-        ]
-        data_t = {
-            value[0]: value[1] for value in tmp2
-        }
+        tmp2 = [value.split("=", 1) for value in tmp if "=" in value]
+        data_t = {value[0]: value[1] for value in tmp2}
         return data_t
 
     @staticmethod
     def verif_key_data(data: dict) -> None:
         key_test = {
-            "WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"
+            "WIDTH",
+            "HEIGHT",
+            "ENTRY",
+            "EXIT",
+            "OUTPUT_FILE",
+            "PERFECT",
+            "GENERATOR",
+            "SOLVER",
         }
-        set_key = {
-            key for key in data.keys()
-        }
+        set_key = {key for key in data.keys()}
         if len(set_key) != len(key_test):
             raise KeyError("Missing some data the len do not correspond")
         res_key = {key for key in set_key if key not in key_test}
         if len(res_key) != 0:
-            raise KeyError("Some Key "
-                           f"do not correspond the keys: {res_key}")
+            raise KeyError(
+                "Some Key " f"do not correspond the keys: {res_key}"
+            )
 
     @staticmethod
     def convert_values(data: dict):
@@ -47,7 +53,43 @@ class DataMaze:
         for key in key_bool:
             res.update({key: DataMaze.convert_bool(data[key])})
         res.update({"OUTPUT_FILE": data["OUTPUT_FILE"]})
+        res.update(
+            DataMaze.get_solver_generator(data, res["ENTRY"], res["EXIT"])
+        )
         return res
+
+    @staticmethod
+    def get_solver_generator(data: dict, entry: int, exit: int) -> dict:
+        available_generator = {
+            "Kruskal": Kruskal,
+            "DFS": DepthFirstSearch,
+        }
+        available_solver = {
+            "AStar": AStar,
+        }
+        res = {}
+        res["GENERATOR"] = available_generator[data["GENERATOR"]]()
+        res["SOLVER"] = available_solver[data["SOLVER"]](entry, exit)
+        return res
+
+    @staticmethod
+    def convert_tuple(data: str) -> tuple:
+        data_t = data.split(",")
+        if len(data_t) != 2:
+            raise ValueError(
+                "There is too much " "argument in the coordinate given"
+            )
+        x, y = data_t
+        tup = (int(x), int(y))
+        return tup
+
+    @staticmethod
+    def convert_bool(data: str) -> bool:
+        if data != "True" and data != "False":
+            raise ValueError("This is not True or False")
+        if data == "True":
+            return True
+        return False
 
     @staticmethod
     def get_data_maze(name_file: str) -> dict:
@@ -56,7 +98,7 @@ class DataMaze:
             data_dict = DataMaze.transform_data(data_str)
             DataMaze.verif_key_data(data_dict)
             data_maze = DataMaze.convert_values(data_dict)
-            return data_maze
+            return {k.lower(): v for k, v in data_maze.items()}
         except FileNotFoundError:
             print("The file do not exist")
             exit()
@@ -70,28 +112,11 @@ class DataMaze:
             print(f"Error on the key in the file: {e}")
             exit()
         except IndexError as e:
-            print("In the function transform Data some data cannot "
-                  f"be splited by '=' because '=' was not present: {e}")
+            print(
+                "In the function transform Data some data cannot "
+                f"be splited by '=' because '=' was not present: {e}"
+            )
             exit()
         except AttributeError as e:
-            print("Error on the "
-                  f"funciton get_data_maze : {e}")
+            print("Error on the " f"funciton get_data_maze : {e}")
             exit()
-
-    @staticmethod
-    def convert_tuple(data: str) -> tuple:
-        data_t = data.split(",")
-        if len(data_t) != 2:
-            raise ValueError("There is too much "
-                             "argument in the coordinate given")
-        x, y = data_t
-        tup = (int(x), int(y))
-        return tup
-
-    @staticmethod
-    def convert_bool(data: str) -> bool:
-        if data != "True" and data != "False":
-            raise ValueError("This is not True or False")
-        if data == "True":
-            return True
-        return False

@@ -8,7 +8,7 @@ import math
 class MazeGenerator(ABC):
     @abstractmethod
     def generator(
-        self, height: int, width: int, seed: int = None
+        self, height: int, width: int, seed: int | None = None
     ) -> Generator[np.ndarray, None, np.ndarray]: ...
 
     @staticmethod
@@ -113,7 +113,7 @@ class Kruskal(MazeGenerator):
         return s1 in cells_ft or s2 in cells_ft
 
     def generator(
-        self, height: int, width: int, seed: int = None
+        self, height: int, width: int, seed: int | None = None
     ) -> Generator[np.ndarray, None, np.ndarray]:
         cells_ft = None
         if height > 10 and width > 10:
