@@ -108,8 +108,8 @@ class Kruskal(MazeGenerator):
     ) -> bool:
         if cells_ft is None:
             return False
-        s1 = (wall[0] / width, wall[0] % width)
-        s2 = (wall[1] / width, wall[1] % width)
+        s1 = (math.trunc(wall[0] / width), wall[0] % width)
+        s2 = (math.trunc(wall[1] / width), wall[1] % width)
         return s1 in cells_ft or s2 in cells_ft
 
     def generator(
@@ -133,7 +133,9 @@ class Kruskal(MazeGenerator):
         np.random.shuffle(walls)
 
         yield self.walls_to_maze(walls, height, width)
-        while len(sets.sets) != 1 and (len(sets.sets) != 19 and cells_ft not None):
+        while (len(sets.sets) != 1 and cells_ft is None) or (
+            len(sets.sets) != 19 and cells_ft is not None
+        ):
             for wall in walls:
                 if not self.is_in_same_set(sets, wall) and not self.touch_ft(
                     width, wall, cells_ft
@@ -141,7 +143,9 @@ class Kruskal(MazeGenerator):
                     self.merge_sets(sets, wall)
                     walls.remove(wall)
                     yield self.walls_to_maze(walls, height, width)
-                if len(sets.sets) == 19:
+                if (len(sets.sets) == 1 and cells_ft is None) or (
+                    len(sets.sets) == 19 and cells_ft is not None
+                ):
                     break
         print(f"nb sets: {len(sets.sets)}")
         return self.walls_to_maze(walls, height, width)
