@@ -42,24 +42,54 @@ class MazeGenerator(ABC):
 
     @staticmethod
     def unperfect_maze(width: int, height: int,
-                       maze: np.ndarray, forty_two: set
+                       maze: np.ndarray, forty_two: set | None,
+                       prob: float = 0.1
                        ) -> Generator[np.ndarray, None, np.ndarray]:
-        broken_set = DepthFirstSearch.gen_broken_set(width, height)
-        final_set = broken_set.difference(forty_two)
-        for coord in broken_set:
-            yield maze
-        return broken_set
+        directions = {
+            "N": (0, -1),
+            "S": (0, 1),
+            "W": (-1, 0),
+            "E": (1, 0)
+        }
 
-    @staticmethod
-    def gen_broken_set(width: int, height: int) -> set:
-        maxi = int(width * height * 0.1)
-        points = set()
-        while len(points) < maxi:
-            points.add(
-                (np.random.randint(low=1, high=(width - 1)),
-                 np.random.randint(low=1, high=(height - 1)))
-            )
-        return points
+        reverse = {
+            "N": "S",
+            "S": "N",
+            "W": "E",
+            "E": "W"
+        }
+        min_break = 3
+        while True:
+            count = 0
+            for y in range(height):
+                for x in range(width):
+                    if forty_two and (x, y) in forty_two:
+                        continue
+                    for direc, (dx, dy) in directions.items():
+                        nx, ny = x + dx, y + dy
+                        if forty_two and (
+                            (y, x) in forty_two
+                            or (ny, nx) in forty_two
+                        ):
+                            continue
+                        if not (0 <= nx < width and 0 < ny < height):
+                            continue
+                        if direc in ["S", "E"]:
+                            continue
+                        if np.random.random() < prob:
+                            count += 1
+                            cell = maze[y][x]
+                            cell_n = maze[ny][nx]
+                            cell = DepthFirstSearch.broken_wall(cell, direc)
+                            cell_n = DepthFirstSearch.broken_wall(cell_n,
+                                                                  reverse[
+                                                                    direc])
+                            maze[y][x] = cell
+                            maze[ny][nx] = cell_n
+                            yield maze
+            if count > min_break:
+                break
+        return maze
 
 
 class Kruskal(MazeGenerator):
@@ -160,6 +190,7 @@ class DepthFirstSearch(MazeGenerator):
         self.start = start
         self.end = end
         self.perfect = perfect
+        self.forty_two: set | None = None
 
     def generator(
         self, height: int, width: int, seed: int = None
@@ -167,10 +198,15 @@ class DepthFirstSearch(MazeGenerator):
         if seed is not None:
             np.random.seed(seed)
         maze = self.init_maze(width, height)
-        forty_two = self.get_cell_ft(width, height)
+        if width > 9 and height > 9:
+            self.forty_two = self.get_cell_ft(width, height)
         visited = np.zeros((height, width), dtype=bool)
-        if self.start not in forty_two and self.end not in forty_two:
-            visited = self.lock_cell_ft(visited, forty_two)
+        if (
+            self.forty_two
+            and self.start not in self.forty_two
+            and self.end not in self.forty_two
+        ):
+            visited = self.lock_cell_ft(visited, self.forty_two)
         path = list()
         w_h = (width, height)
         coord = (0, 0)
@@ -201,6 +237,12 @@ class DepthFirstSearch(MazeGenerator):
             x, y = coord
             maze[y][x] = self.broken_wall(maze[y][x], wall_r)
             yield maze
+        if self.perfect is False:
+            gen = DepthFirstSearch.unperfect_maze(width, height, maze,
+                                                  self.forty_two)
+            for res in gen:
+                maze = res
+                yield maze
         return maze
 
     @staticmethod

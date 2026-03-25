@@ -7,14 +7,10 @@ import src.amaz_lib as g
 def main(maze_gen: MazeGenerator) -> None:
     # try:
     maze = Maze(maze=None)
-    solver = g.DepthFirstSearchSolver((1, 1), (8, 5))
-    for alg in maze_gen.generator(15, 15):
+    for alg in maze_gen.generator(5, 2):
         maze.set_maze(alg)
-        os.system("clear")
+    os.system("clear")
     maze.ascii_print()
-    print(solver.solve(maze, 15, 15))
-    # solver = AStar((1, 1), (14, 18))
-    # print(solver.solve(maze))
 
 
 # except Exception as err:
@@ -22,4 +18,4 @@ def main(maze_gen: MazeGenerator) -> None:
 
 
 if __name__ == "__main__":
-    main(g.DepthFirstSearch((1, 1), (8, 5)))
+    main(g.DepthFirstSearch((1, 1), (1, 1), False))
