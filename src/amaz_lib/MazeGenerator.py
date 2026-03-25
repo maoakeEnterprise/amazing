@@ -230,7 +230,7 @@ class DepthFirstSearch(MazeGenerator):
         return {"N": "S", "S": "N", "W": "E", "E": "W"}[direction]
 
     @staticmethod
-    def back_on_step(path: list, w_h: tuple, visited: np.array) -> list:
+    def back_on_step(path: list, w_h: tuple, visited: np.ndarray) -> list:
         while path:
             last = path[-1]
             if DepthFirstSearch.random_cells(visited, last, w_h):

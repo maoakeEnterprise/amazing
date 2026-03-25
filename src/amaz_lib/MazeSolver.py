@@ -9,7 +9,8 @@ class MazeSolver(ABC):
         self.end = (end[0] - 1, end[1] - 1)
 
     @abstractmethod
-    def solve(self, maze: Maze) -> str: ...
+    def solve(self, maze: Maze, height: int = None,
+              width: int = None) -> str: ...
 
 
 class AStar(MazeSolver):
@@ -107,11 +108,11 @@ class AStar(MazeSolver):
             case _:
                 return actual
 
-    def get_path(self, maze: np.ndarray) -> str | None:
-        actual = self.start
-        path = ""
+    # def get_path(self, maze: np.ndarray) -> str | None:
+    #     actual = self.start
+    #     path = ""
 
-        return None
+    #     return None
 
     def solve(self, maze: Maze) -> str:
         print(maze)
@@ -119,3 +120,78 @@ class AStar(MazeSolver):
         if res is None:
             raise Exception("Path not found")
         return res
+
+
+class DepthFirstSearchSolver(MazeSolver):
+    def __init__(self, start, end):
+        super().__init__(start, end)
+
+    def solve(self, maze: Maze, height: int = None,
+              width: int = None) -> str:
+        path_str = ""
+        visited = np.zeros((height, width), dtype=bool)
+        path = list()
+        move = list()
+        maze_s = maze.get_maze()
+        coord = self.start
+        h_w = (height, width)
+        while coord != self.end:
+            visited[coord] = True
+            path.append(coord)
+            rand_p = self.random_path(visited, coord, maze_s, h_w)
+
+            if not rand_p:
+                path, move = self.back_on_step(path, visited, maze_s, h_w,
+                                               move)
+                if not path:
+                    break
+                coord = path[-1]
+                rand_p = self.random_path(visited, coord, maze_s, h_w)
+            next = self.next_path(rand_p)
+            move.append(next)
+            coord = self.next_cell(coord, next)
+        for m in move:
+            path_str += m
+        return path_str
+
+    @staticmethod
+    def random_path(visited: np.ndarray, coord: tuple,
+                    maze: np.ndarray, h_w: tuple) -> list:
+        random_p = []
+        h, w = h_w
+        y, x = coord
+
+        if y - 1 >= 0 and not maze[y][x].get_north() and not visited[y - 1][x]:
+            random_p.append("N")
+
+        if y + 1 < h and not maze[y][x].get_south() and not visited[y + 1][x]:
+            random_p.append("S")
+
+        if x - 1 >= 0 and not maze[y][x].get_west() and not visited[y][x - 1]:
+            random_p.append("W")
+
+        if x + 1 < w and not maze[y][x].get_est() and not visited[y][x + 1]:
+            random_p.append("E")
+        return random_p
+
+    @staticmethod
+    def next_path(rand_path: list) -> str:
+        return np.random.choice(rand_path)
+
+    @staticmethod
+    def back_on_step(path: list, visited: np.ndarray,
+                     maze: np.ndarray, h_w: tuple, move: list) -> list:
+        while path:
+            last = path[-1]
+            if DepthFirstSearchSolver.random_path(visited, last, maze, h_w):
+                break
+            path.pop()
+            move.pop()
+        return path, move
+
+    @staticmethod
+    def next_cell(coord: tuple, next: str) -> tuple:
+        y, x = coord
+        next_step = {"N": (-1, 0), "S": (1, 0), "W": (0, -1), "E": (0, 1)}
+        add_y, add_x = next_step[next]
+        return (y + add_y, x + add_x)
