@@ -8,9 +8,11 @@ def main() -> None:
         config = Parsing.DataMaze.get_data_maze("config.txt")
         print(config)
         amazing = AMazeIng(**config)
-        for gen in amazing.generate():
+        for _ in amazing.generate():
             os.system("clear")
             amazing.maze.ascii_print()
+        with open("test.txt", "w") as output:
+            output.write(amazing.__str__())
     except Exception as err:
         print(err)
 

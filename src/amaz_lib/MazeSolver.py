@@ -115,7 +115,6 @@ class AStar(MazeSolver):
         path = [(self.start, self.best_path(maze, self.start, None))]
         visited = [self.start]
         while len(path) > 0 and path[-1][0] != self.end:
-            print(path[-1])
             if len(path[-1][1]) == 0:
                 path.pop(-1)
                 if len(path) == 0:
@@ -153,7 +152,6 @@ class AStar(MazeSolver):
         )
 
     def solve(self, maze: Maze) -> str:
-        print(maze)
         res = self.get_path(maze.get_maze())
         if res is None:
             raise Exception("Path not found")
