@@ -1,21 +1,21 @@
 import os
-from src.amaz_lib import Maze
-from src.amaz_lib import MazeGenerator
-import src.amaz_lib as g
+from src.AMazeIng import AMazeIng
+from src.parsing import Parsing
 
 
-def main(maze_gen: MazeGenerator) -> None:
-    # try:
-    maze = Maze(maze=None)
-    for alg in maze_gen.generator(5, 2):
-        maze.set_maze(alg)
-    os.system("clear")
-    maze.ascii_print()
-
-
-# except Exception as err:
-# print(err)
+def main() -> None:
+    try:
+        config = Parsing.DataMaze.get_data_maze("config.txt")
+        print(config)
+        amazing = AMazeIng(**config)
+        for _ in amazing.generate():
+            os.system("clear")
+            amazing.maze.ascii_print()
+        with open("test.txt", "w") as output:
+            output.write(amazing.__str__())
+    except Exception as err:
+        print(err)
 
 
 if __name__ == "__main__":
-    main(g.DepthFirstSearch((1, 1), (1, 1), False))
+    main()

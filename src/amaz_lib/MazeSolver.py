@@ -5,8 +5,8 @@ import numpy as np
 
 class MazeSolver(ABC):
     def __init__(self, start: tuple[int, int], end: tuple[int, int]) -> None:
-        self.start = (start[0] - 1, start[1] - 1)
-        self.end = (end[0] - 1, end[1] - 1)
+        self.start = (start[1] - 1, start[0] - 1)
+        self.end = (end[1] - 1, end[0] - 1)
 
     @abstractmethod
     def solve(self, maze: Maze, height: int = None,
@@ -49,35 +49,39 @@ class AStar(MazeSolver):
             return 1000
 
     def best_path(
-        self, maze: np.ndarray, actual: tuple[int, int]
-    ) -> dict[str, int | None]:
-        print(actual)
+        self,
+        maze: np.ndarray,
+        actual: tuple[int, int],
+        last: str | None,
+    ) -> dict[str, int]:
         path = {
             "N": (
-                self.f((actual[1] - 1, actual[0]))
-                if not maze[actual[1]][actual[0]].get_north() and actual[0] > 0
+                self.f((actual[0], actual[1] - 1))
+                if not maze[actual[1]][actual[0]].get_north() and actual[1] > 0
                 else None
             ),
             "E": (
-                self.f((actual[1], actual[0] + 1))
+                self.f((actual[0] + 1, actual[1]))
                 if not maze[actual[1]][actual[0]].get_est()
-                and actual[1] < len(maze) - 1
+                and actual[0] < len(maze[0]) - 1
                 else None
             ),
             "S": (
-                self.f((actual[1] + 1, actual[0]))
+                self.f((actual[0], actual[1] + 1))
                 if not maze[actual[1]][actual[0]].get_south()
-                and actual[0] < len(maze) - 1
+                and actual[1] < len(maze) - 1
                 else None
             ),
             "W": (
-                self.f((actual[1], actual[0] - 1))
-                if not maze[actual[1]][actual[0]].get_west() and actual[1] > 0
+                self.f((actual[0] - 1, actual[1]))
+                if not maze[actual[1]][actual[0]].get_west() and actual[0] > 0
                 else None
             ),
         }
         return {
-            k: v for k, v in sorted(path.items(), key=lambda item: item[0])
+            k: v
+            for k, v in sorted(path.items(), key=lambda item: item[0])
+            if v is not None and k != last
         }
 
     def get_opposit(self, dir: str) -> str:
@@ -108,15 +112,48 @@ class AStar(MazeSolver):
             case _:
                 return actual
 
-    # def get_path(self, maze: np.ndarray) -> str | None:
-    #     actual = self.start
-    #     path = ""
+    def get_path(self, maze: np.ndarray) -> str | None:
+        path = [(self.start, self.best_path(maze, self.start, None))]
+        visited = [self.start]
+        while len(path) > 0 and path[-1][0] != self.end:
+            if len(path[-1][1]) == 0:
+                path.pop(-1)
+                if len(path) == 0:
+                    break
+                k = next(iter(path[-1][1]))
+                path[-1][1].pop(k)
+                continue
 
-    #     return None
+            while len(path[-1][1]) > 0:
+                next_pos = self.get_next_pos(
+                    list(path[-1][1].keys())[0], path[-1][0]
+                )
+                if next_pos in visited:
+                    k = next(iter(path[-1][1]))
+                    path[-1][1].pop(k)
+                else:
+                    break
+            if len(path[-1][1]) == 0:
+                path.pop(-1)
+                continue
+
+            pre = self.get_opposit(list(path[-1][1].keys())[0])
+            path.append(
+                (
+                    next_pos,
+                    self.best_path(maze, next_pos, pre),
+                )
+            )
+            visited += [next_pos]
+        if len(path) == 0:
+            return None
+        path[-1] = (self.end, {})
+        return "".join(
+            str(list(c[1].keys())[0]) for c in path if len(c[1]) > 0
+        )
 
     def solve(self, maze: Maze) -> str:
-        print(maze)
-        res = self.get_path(self.start, maze.get_maze(), None)
+        res = self.get_path(maze.get_maze())
         if res is None:
             raise Exception("Path not found")
         return res

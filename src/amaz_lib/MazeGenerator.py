@@ -13,7 +13,7 @@ class MazeGenerator(ABC):
 
     @abstractmethod
     def generator(
-        self, height: int, width: int, seed: int = None
+        self, height: int, width: int, seed: int | None = None
     ) -> Generator[np.ndarray, None, np.ndarray]: ...
 
     @staticmethod
@@ -156,9 +156,25 @@ class Kruskal(MazeGenerator):
                 return
         raise Exception("two sets not found")
 
+    @staticmethod
+    def touch_ft(
+        width: int,
+        wall: tuple[int, int],
+        cells_ft: None | set[tuple[int, int]],
+    ) -> bool:
+        if cells_ft is None:
+            return False
+        s1 = (math.trunc(wall[0] / width), wall[0] % width)
+        s2 = (math.trunc(wall[1] / width), wall[1] % width)
+        return s1 in cells_ft or s2 in cells_ft
+
     def generator(
-        self, height: int, width: int, seed: int = None
+        self, height: int, width: int, seed: int | None = None
     ) -> Generator[np.ndarray, None, np.ndarray]:
+        cells_ft = None
+        if height > 10 and width > 10:
+            cells_ft = self.get_cell_ft(width, height)
+
         if seed is not None:
             np.random.seed(seed)
         sets = self.Sets([self.Set([i]) for i in range(height * width)])
@@ -173,13 +189,19 @@ class Kruskal(MazeGenerator):
         np.random.shuffle(walls)
 
         yield self.walls_to_maze(walls, height, width)
-        while len(sets.sets) > 1:
+        while (len(sets.sets) != 1 and cells_ft is None) or (
+            len(sets.sets) != 19 and cells_ft is not None
+        ):
             for wall in walls:
-                if not self.is_in_same_set(sets, wall):
+                if not self.is_in_same_set(sets, wall) and not self.touch_ft(
+                    width, wall, cells_ft
+                ):
                     self.merge_sets(sets, wall)
                     walls.remove(wall)
                     yield self.walls_to_maze(walls, height, width)
-                if len(sets.sets) == 1:
+                if (len(sets.sets) == 1 and cells_ft is None) or (
+                    len(sets.sets) == 19 and cells_ft is not None
+                ):
                     break
         print(f"nb sets: {len(sets.sets)}")
         return self.walls_to_maze(walls, height, width)
@@ -312,8 +334,9 @@ class DepthFirstSearch(MazeGenerator):
         return path
 
     @staticmethod
-    def lock_cell_ft(visited: np.ndarray, forty_two: set[tuple[int]]
-                     ) -> np.ndarray:
+    def lock_cell_ft(
+        visited: np.ndarray, forty_two: set[tuple[int]]
+    ) -> np.ndarray:
         tab = [cell for cell in forty_two]
         for cell in tab:
             visited[cell] = True

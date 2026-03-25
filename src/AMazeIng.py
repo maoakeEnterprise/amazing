@@ -1,22 +1,20 @@
-from dataclasses import field
-from os import eventfd_read
 from typing import Generator
-import numpy
 from typing_extensions import Self
-from pydantic import AfterValidator, BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ConfigDict
 
-from amaz_lib import Maze, MazeGenerator, MazeSolver
-from amaz_lib.Cell import Cell
+from src.amaz_lib import Maze, MazeGenerator, MazeSolver
 
 
 class AMazeIng(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     width: int = Field(ge=3)
     height: int = Field(ge=3)
     entry: tuple[int, int]
     exit: tuple[int, int]
     output_file: str = Field(min_length=3)
     perfect: bool = Field(default=True)
-    maze: Maze = Field(default=Maze(maze=numpy.array([])))
+    maze: Maze = Field(default=Maze(None))
     generator: MazeGenerator
     solver: MazeSolver
 
