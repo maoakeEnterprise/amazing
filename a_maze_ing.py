@@ -7,10 +7,10 @@ import src.amaz_lib as g
 def main(maze_gen: MazeGenerator) -> None:
     # try:
     maze = Maze(maze=None)
-    for alg in maze_gen.generator(30, 30):
+    for alg in maze_gen.generator(10, 10):
         maze.set_maze(alg)
         os.system("clear")
-        maze.ascii_print()
+    maze.ascii_print()
     # solver = AStar((1, 1), (14, 18))
     # print(solver.solve(maze))
 

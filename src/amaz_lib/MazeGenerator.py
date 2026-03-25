@@ -8,8 +8,32 @@ import math
 class MazeGenerator(ABC):
     @abstractmethod
     def generator(
-        self, height: int, width: int
+        self, height: int, width: int, seed: int = None
     ) -> Generator[np.ndarray, None, np.ndarray]: ...
+
+    @staticmethod
+    def get_cell_ft(width: int, height: int) -> set:
+        forty_two = set()
+        y, x = (int(height / 2), int(width / 2))
+        forty_two.add((y, x - 1))
+        forty_two.add((y, x - 2))
+        forty_two.add((y, x - 3))
+        forty_two.add((y - 1, x - 3))
+        forty_two.add((y - 2, x - 3))
+        forty_two.add((y + 1, x - 1))
+        forty_two.add((y + 2, x - 1))
+        forty_two.add((y, x + 1))
+        forty_two.add((y, x + 2))
+        forty_two.add((y, x + 3))
+        forty_two.add((y - 1, x + 3))
+        forty_two.add((y - 2, x + 3))
+        forty_two.add((y - 2, x + 2))
+        forty_two.add((y - 2, x + 1))
+        forty_two.add((y + 1, x + 1))
+        forty_two.add((y + 2, x + 1))
+        forty_two.add((y + 2, x + 2))
+        forty_two.add((y + 2, x + 3))
+        return forty_two
 
 
 class Kruskal(MazeGenerator):
@@ -77,8 +101,10 @@ class Kruskal(MazeGenerator):
         raise Exception("two sets not found")
 
     def generator(
-        self, height: int, width: int
+        self, height: int, width: int, seed: int = None
     ) -> Generator[np.ndarray, None, np.ndarray]:
+        if seed is not None:
+            np.random.seed(seed)
         sets = self.Sets([self.Set([i]) for i in range(height * width)])
         walls = []
         for h in range(height):
@@ -106,16 +132,19 @@ class Kruskal(MazeGenerator):
 class DepthFirstSearch(MazeGenerator):
 
     def generator(
-        self, height: int, width: int
+        self, height: int, width: int, seed: int = None
     ) -> Generator[np.ndarray, None, np.ndarray]:
+        if seed is not None:
+            np.random.seed(seed)
         maze = self.init_maze(width, height)
+        forty_two = self.get_cell_ft(width, height)
         visited = np.zeros((height, width), dtype=bool)
+        visited = self.lock_cell_ft(visited, forty_two)
         path = list()
         w_h = (width, height)
         coord = (0, 0)
         x, y = coord
         first_iteration = True
-        visited = self.lock_cell_ft(visited, (10, 10))
 
         while path or first_iteration:
             first_iteration = False
@@ -210,17 +239,9 @@ class DepthFirstSearch(MazeGenerator):
         return path
 
     @staticmethod
-    def lock_cell_ft(visited: np.ndarray, coord: tuple) -> np.ndarray:
-        x, y = coord
-        for dy in range(y, y + 7):
-            for dx in range(x, x + 11):
-                visited[dy, dx] = True
+    def lock_cell_ft(visited: np.ndarray, forty_two: set[tuple[int]]
+                     ) -> np.ndarray:
+        tab = [cell for cell in forty_two]
+        for cell in tab:
+            visited[cell] = True
         return visited
-
-    @staticmethod
-    def draw_ft(maze: np.ndarray, coord: tuple):
-        x, y = coord
-        for dy in range(y, y + 7):
-            for dx in range(x, x + 11):
-                maze[dy][dx] = Cell(value=0)
-        return maze
