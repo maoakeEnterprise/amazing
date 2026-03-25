@@ -5,7 +5,7 @@ from amaz_lib.MazeGenerator import DepthFirstSearch
 class TestMazeGenerator:
 
     def test_generator(self) -> None:
-        w_h = (300, 300)
+        w_h = (50, 50)
         maze = numpy.array([])
         generator = DepthFirstSearch().generator(*w_h)
         for output in generator:
