@@ -190,6 +190,8 @@ class DepthFirstSearchSolver(MazeSolver):
             coord = self.next_cell(coord, next)
         for m in move:
             path_str += m
+        if not path:
+            raise Exception("Path not found")
         return path_str
 
     @staticmethod

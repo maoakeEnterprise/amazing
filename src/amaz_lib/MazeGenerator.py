@@ -9,7 +9,7 @@ class MazeGenerator(ABC):
     def __init__(self, start: tuple, end: tuple, perfect: bool) -> None:
         self.start = (start[0] - 1, start[1] - 1)
         self.end = (end[0] - 1, end[1] - 1)
-        self.bool = bool
+        self.perfect = perfect
 
     @abstractmethod
     def generator(
@@ -93,6 +93,7 @@ class MazeGenerator(ABC):
 
 
 class Kruskal(MazeGenerator):
+
     class Set:
         def __init__(self, cells: list[int]) -> None:
             self.cells: list[int] = cells
@@ -174,6 +175,8 @@ class Kruskal(MazeGenerator):
         cells_ft = None
         if height > 10 and width > 10:
             cells_ft = self.get_cell_ft(width, height)
+        if cells_ft and (self.start in cells_ft or self.end in cells_ft):
+            cells_ft = None
 
         if seed is not None:
             np.random.seed(seed)
@@ -204,13 +207,20 @@ class Kruskal(MazeGenerator):
                 ):
                     break
         print(f"nb sets: {len(sets.sets)}")
-        return self.walls_to_maze(walls, height, width)
+        maze = self.walls_to_maze(walls, height, width)
+        if self.perfect is False:
+            gen = Kruskal.unperfect_maze(width, height, maze,
+                                         cells_ft)
+            for res in gen:
+                maze = res
+                yield maze
+        return maze
 
 
 class DepthFirstSearch(MazeGenerator):
     def __init__(self, start: bool, end: bool, perfect: bool) -> None:
-        self.start = start
-        self.end = end
+        self.start = (start[0] - 1, start[1] - 1)
+        self.end = (end[0] - 1, end[1] - 1)
         self.perfect = perfect
         self.forty_two: set | None = None
 
