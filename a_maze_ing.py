@@ -76,22 +76,22 @@ class MazeMLX:
                     self.put_line((x0, y1), (x1, y1))
                 if maze[y][x].get_west():
                     self.put_line((x0, y0), (x0, y1))
-
         self.mlx.mlx_put_image_to_window(
-            self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0
-        )
+                        self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0)
 
     def close_loop(self, _: Any):
         self.mlx.mlx_loop_exit(self.mlx_ptr)
-        self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
 
     def gen_maze(self, amazing: AMazeIng) -> None:
-        for _ in amazing.generate():
+        for output in amazing.generate():
+            maze = output
+            maze.ascii_print()
+            self.clear_image()
             self.update_maze(amazing.maze.get_maze())
-            time.sleep(1)
 
     def start(self, amazing: AMazeIng) -> None:
-        self.mlx.mlx_loop_hook(self.mlx_ptr, self.gen_maze, amazing)
+        test = self.gen_maze(amazing)
+        # self.mlx.mlx_loop_hook(self.mlx_ptr, test, amazing)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_loop(self.mlx_ptr)
 

@@ -30,6 +30,7 @@ class AMazeIng(BaseModel):
         for array in self.generator.generator(self.height, self.width):
             self.maze.set_maze(array)
             yield self.maze
+        return
 
     def solve_path(self) -> str:
         return self.solver.solve(self.maze)

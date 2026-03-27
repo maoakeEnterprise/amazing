@@ -1,5 +1,6 @@
 install:
 	uv sync
+	uv pip install mlx-2.2-py3-none-any.whl
 
 run: install
 	uv run python3 a_maze_ing.py config.txt
