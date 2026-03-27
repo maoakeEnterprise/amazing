@@ -199,11 +199,7 @@ class MazeMLX:
             # time.sleep(0.01)
         except StopIteration:
             if self.path_printer is not None:
-                try:
-                    next(self.path_printer)
-                    time.sleep(0.03)
-                except StopIteration:
-                    pass
+                self.render_path()
 
 
 def main() -> None:
