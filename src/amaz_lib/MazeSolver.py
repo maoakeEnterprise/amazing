@@ -152,7 +152,8 @@ class AStar(MazeSolver):
             str(list(c[1].keys())[0]) for c in path if len(c[1]) > 0
         )
 
-    def solve(self, maze: Maze) -> str:
+    def solve(self, maze: Maze, height: int = None,
+              width: int = None) -> str:
         res = self.get_path(maze.get_maze())
         if res is None:
             raise Exception("Path not found")
@@ -161,8 +162,7 @@ class AStar(MazeSolver):
 
 class DepthFirstSearchSolver(MazeSolver):
     def __init__(self, start, end):
-        self.start = (start[1] - 1, start[0] - 1)
-        self.end = (end[1] - 1, end[0] - 1)
+        super().__init__(start, end)
 
     def solve(self, maze: Maze, height: int = None,
               width: int = None) -> str:

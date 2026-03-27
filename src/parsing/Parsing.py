@@ -1,5 +1,5 @@
 from src.amaz_lib.MazeGenerator import DepthFirstSearch, Kruskal
-from src.amaz_lib.MazeSolver import AStar
+from src.amaz_lib.MazeSolver import AStar, DepthFirstSearchSolver
 
 
 class DataMaze:
@@ -68,6 +68,7 @@ class DataMaze:
         }
         available_solver = {
             "AStar": AStar,
+            "DFS": DepthFirstSearchSolver
         }
         res = {}
         res["GENERATOR"] = available_generator[data["GENERATOR"]](entry, exit,
