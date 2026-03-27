@@ -129,7 +129,6 @@ class Kruskal(MazeGenerator):
         for h in range(height - 1):
             for w in range(width):
                 walls += [(w + (width * h), w + (width * (h + 1)))]
-        print(walls)
         np.random.shuffle(walls)
 
         yield self.walls_to_maze(walls, height, width)
@@ -147,7 +146,6 @@ class Kruskal(MazeGenerator):
                     len(sets.sets) == 19 and cells_ft is not None
                 ):
                     break
-        print(f"nb sets: {len(sets.sets)}")
         return self.walls_to_maze(walls, height, width)
 
 

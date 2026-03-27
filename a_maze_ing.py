@@ -1,11 +1,12 @@
 import os
-from typing import Any, Callable
+from typing import Any, Callable, Generator
 from src.AMazeIng import AMazeIng
 from src.parsing import Parsing
 from mlx.mlx import Mlx
 import numpy as np
 import math
 from src.amaz_lib import Maze
+import time
 
 
 class MazeMLX:
@@ -22,9 +23,8 @@ class MazeMLX:
             self.mlx.mlx_get_data_addr(self.img_ptr)
         )
 
-    def __del__(self) -> None:
+    def close(self) -> None:
         self.mlx.mlx_destroy_image(self.mlx_ptr, self.img_ptr)
-        self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
 
     def put_pixel(self, x, y) -> None:
         offset = y * self.size_line + x * (self.bpp // 8)
@@ -83,10 +83,16 @@ class MazeMLX:
 
     def close_loop(self, _: Any):
         self.mlx.mlx_loop_exit(self.mlx_ptr)
+        self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
 
-    def gen_maze(self, maze: np.ndarray) -> None:
-        self.mlx.mlx_loop_hook(self.mlx_ptr, self.update_maze, maze)
-        self.mlx.mlx_hook(self.win_ptr, 17, 0, self.close_loop, None)
+    def gen_maze(self, amazing: AMazeIng) -> None:
+        for _ in amazing.generate():
+            self.update_maze(amazing.maze.get_maze())
+            time.sleep(1)
+
+    def start(self, amazing: AMazeIng) -> None:
+        self.mlx.mlx_loop_hook(self.mlx_ptr, self.gen_maze, amazing)
+        self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_loop(self.mlx_ptr)
 
 
@@ -96,14 +102,14 @@ def main() -> None:
         mlx = MazeMLX(1000, 1000)
         config = Parsing.DataMaze.get_data_maze("config.txt")
         amazing = AMazeIng(**config)
-        for _ in amazing.generate():
-            os.system("clear")
-            amazing.maze.ascii_print()
-        mlx.gen_maze(amazing.maze.get_maze())
+        mlx.start(amazing)
         with open("test.txt", "w") as output:
             output.write(amazing.__str__())
     except Exception as err:
         print(err)
+    finally:
+        if mlx is not None:
+            mlx.close()
 
 
 if __name__ == "__main__":
