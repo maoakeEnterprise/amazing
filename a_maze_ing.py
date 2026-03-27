@@ -1,12 +1,9 @@
-import os
-from typing import Any, Callable, Generator
+from typing import Any
 from src.AMazeIng import AMazeIng
 from src.parsing import Parsing
 from mlx.mlx import Mlx
 import numpy as np
 import math
-from src.amaz_lib import Maze
-import time
 
 
 class MazeMLX:
@@ -15,6 +12,7 @@ class MazeMLX:
         self.height = height
         self.width = width
         self.mlx_ptr = self.mlx.mlx_init()
+        self.generator = None
         self.win_ptr = self.mlx.mlx_new_window(
             self.mlx_ptr, width, height, "amazing"
         )
@@ -37,6 +35,7 @@ class MazeMLX:
 
     def clear_image(self) -> None:
         self.buf[:] = b"\x00" * len(self.buf)
+        self.mlx.mlx_clear_window(self.mlx_ptr, self.win_ptr)
 
     def put_line(self, start: tuple[int, int], end: tuple[int, int]) -> None:
         sx, sy = start
@@ -77,23 +76,27 @@ class MazeMLX:
                 if maze[y][x].get_west():
                     self.put_line((x0, y0), (x0, y1))
         self.mlx.mlx_put_image_to_window(
-                        self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0)
+            self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0)
 
     def close_loop(self, _: Any):
         self.mlx.mlx_loop_exit(self.mlx_ptr)
 
     def gen_maze(self, amazing: AMazeIng) -> None:
-        for output in amazing.generate():
-            maze = output
-            maze.ascii_print()
-            self.clear_image()
-            self.update_maze(amazing.maze.get_maze())
+        self.generator = amazing.generate()
 
     def start(self, amazing: AMazeIng) -> None:
-        test = self.gen_maze(amazing)
-        # self.mlx.mlx_loop_hook(self.mlx_ptr, test, amazing)
+        self.gen_maze(amazing)
+        self.mlx.mlx_loop_hook(self.mlx_ptr, self.render, amazing)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_loop(self.mlx_ptr)
+
+    def render(self, amazing: AMazeIng):
+        try:
+            next(self.generator)
+            self.update_maze(amazing.maze.get_maze())
+            # time.sleep(0.01)
+        except StopIteration:
+            pass
 
 
 def main() -> None:

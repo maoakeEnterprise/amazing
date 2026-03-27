@@ -32,3 +32,5 @@ run_test_maze_gen:
 	PYTHONPATH=src uv run pytest tests/test_MazeGenerator.py
 run_test:
 	uv run pytest
+mlx:
+	uv run python3 test.py
