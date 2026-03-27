@@ -9,44 +9,30 @@ class MazeSolver(ABC):
         self.end = (end[1] - 1, end[0] - 1)
 
     @abstractmethod
-    def solve(self, maze: Maze, height: int = None,
-              width: int = None) -> str: ...
+    def solve(
+        self, maze: Maze, height: int = None, width: int = None
+    ) -> str: ...
 
 
 class AStar(MazeSolver):
 
     def __init__(self, start: tuple[int, int], end: tuple[int, int]) -> None:
         super().__init__(start, end)
+        self.path = []
 
     def f(self, n):
-        def g(n: tuple[int, int]) -> int:
-            res = 0
-            if n[0] < self.start[0]:
-                res += self.start[0] - n[0]
-            else:
-                res += n[0] - self.start[0]
-            if n[1] < self.start[1]:
-                res += self.start[1] - n[1]
-            else:
-                res += n[1] - self.start[1]
-            return res
+        def g() -> int:
+            return len(self.path) + 1
 
         def h(n: tuple[int, int]) -> int:
-            res = 0
-            if n[0] < self.end[0]:
-                res += self.end[0] - n[0]
-            else:
-                res += n[0] - self.end[0]
-            if n[1] < self.end[1]:
-                res += self.end[1] - n[1]
-            else:
-                res += n[1] - self.end[1]
-            return res
+            return (
+                max(n[0], self.end[0])
+                - min(n[0], self.end[0])
+                + max(n[1], self.end[1])
+                - min(n[1], self.end[1])
+            )
 
-        try:
-            return g(n) + h(n)
-        except Exception:
-            return 1000
+        return g() + h(n)
 
     def best_path(
         self,
@@ -113,47 +99,46 @@ class AStar(MazeSolver):
                 return actual
 
     def get_path(self, maze: np.ndarray) -> str | None:
-        path = [(self.start, self.best_path(maze, self.start, None))]
+        self.path = [(self.start, self.best_path(maze, self.start, None))]
         visited = [self.start]
-        while len(path) > 0 and path[-1][0] != self.end:
-            if len(path[-1][1]) == 0:
-                path.pop(-1)
-                if len(path) == 0:
+        while len(self.path) > 0 and self.path[-1][0] != self.end:
+            if len(self.path[-1][1]) == 0:
+                self.path.pop(-1)
+                if len(self.path) == 0:
                     break
-                k = next(iter(path[-1][1]))
-                path[-1][1].pop(k)
+                k = next(iter(self.path[-1][1]))
+                self.path[-1][1].pop(k)
                 continue
 
-            while len(path[-1][1]) > 0:
+            while len(self.path[-1][1]) > 0:
                 next_pos = self.get_next_pos(
-                    list(path[-1][1].keys())[0], path[-1][0]
+                    list(self.path[-1][1].keys())[0], self.path[-1][0]
                 )
                 if next_pos in visited:
-                    k = next(iter(path[-1][1]))
-                    path[-1][1].pop(k)
+                    k = next(iter(self.path[-1][1]))
+                    self.path[-1][1].pop(k)
                 else:
                     break
-            if len(path[-1][1]) == 0:
-                path.pop(-1)
+            if len(self.path[-1][1]) == 0:
+                self.path.pop(-1)
                 continue
 
-            pre = self.get_opposit(list(path[-1][1].keys())[0])
-            path.append(
+            pre = self.get_opposit(list(self.path[-1][1].keys())[0])
+            self.path.append(
                 (
                     next_pos,
                     self.best_path(maze, next_pos, pre),
                 )
             )
             visited += [next_pos]
-        if len(path) == 0:
+        if len(self.path) == 0:
             return None
-        path[-1] = (self.end, {})
+        self.path[-1] = (self.end, {})
         return "".join(
-            str(list(c[1].keys())[0]) for c in path if len(c[1]) > 0
+            str(list(c[1].keys())[0]) for c in self.path if len(c[1]) > 0
         )
 
-    def solve(self, maze: Maze, height: int = None,
-              width: int = None) -> str:
+    def solve(self, maze: Maze, height: int = None, width: int = None) -> str:
         res = self.get_path(maze.get_maze())
         if res is None:
             raise Exception("Path not found")
@@ -164,8 +149,7 @@ class DepthFirstSearchSolver(MazeSolver):
     def __init__(self, start, end):
         super().__init__(start, end)
 
-    def solve(self, maze: Maze, height: int = None,
-              width: int = None) -> str:
+    def solve(self, maze: Maze, height: int = None, width: int = None) -> str:
         path_str = ""
         visited = np.zeros((height, width), dtype=bool)
         path = list()
@@ -179,8 +163,9 @@ class DepthFirstSearchSolver(MazeSolver):
             rand_p = self.random_path(visited, coord, maze_s, h_w)
 
             if not rand_p:
-                path, move = self.back_on_step(path, visited, maze_s, h_w,
-                                               move)
+                path, move = self.back_on_step(
+                    path, visited, maze_s, h_w, move
+                )
                 if not path:
                     break
                 coord = path[-1]
@@ -195,8 +180,9 @@ class DepthFirstSearchSolver(MazeSolver):
         return path_str
 
     @staticmethod
-    def random_path(visited: np.ndarray, coord: tuple,
-                    maze: np.ndarray, h_w: tuple) -> list:
+    def random_path(
+        visited: np.ndarray, coord: tuple, maze: np.ndarray, h_w: tuple
+    ) -> list:
         random_p = []
         h, w = h_w
         y, x = coord
@@ -219,8 +205,13 @@ class DepthFirstSearchSolver(MazeSolver):
         return np.random.choice(rand_path)
 
     @staticmethod
-    def back_on_step(path: list, visited: np.ndarray,
-                     maze: np.ndarray, h_w: tuple, move: list) -> list:
+    def back_on_step(
+        path: list,
+        visited: np.ndarray,
+        maze: np.ndarray,
+        h_w: tuple,
+        move: list,
+    ) -> list:
         while path:
             last = path[-1]
             if DepthFirstSearchSolver.random_path(visited, last, maze, h_w):
