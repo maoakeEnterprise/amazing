@@ -6,6 +6,11 @@ import math
 
 
 class MazeGenerator(ABC):
+    def __init__(self, start: tuple, end: tuple, perfect: bool) -> None:
+        self.start = (start[0] - 1, start[1] - 1)
+        self.end = (end[0] - 1, end[1] - 1)
+        self.perfect = perfect
+
     @abstractmethod
     def generator(
         self, height: int, width: int, seed: int | None = None
@@ -35,8 +40,60 @@ class MazeGenerator(ABC):
         forty_two.add((y + 2, x + 3))
         return forty_two
 
+    @staticmethod
+    def unperfect_maze(width: int, height: int,
+                       maze: np.ndarray, forty_two: set | None,
+                       prob: float = 0.1
+                       ) -> Generator[np.ndarray, None, np.ndarray]:
+        directions = {
+            "N": (0, -1),
+            "S": (0, 1),
+            "W": (-1, 0),
+            "E": (1, 0)
+        }
+
+        reverse = {
+            "N": "S",
+            "S": "N",
+            "W": "E",
+            "E": "W"
+        }
+        min_break = 2
+        while True:
+            count = 0
+            for y in range(height):
+                for x in range(width):
+                    if forty_two and (x, y) in forty_two:
+                        continue
+                    for direc, (dx, dy) in directions.items():
+                        nx, ny = x + dx, y + dy
+                        if forty_two and (
+                            (y, x) in forty_two
+                            or (ny, nx) in forty_two
+                        ):
+                            continue
+                        if not (0 <= nx < width and 0 < ny < height):
+                            continue
+                        if direc in ["S", "E"]:
+                            continue
+                        if np.random.random() < prob:
+                            count += 1
+                            cell = maze[y][x]
+                            cell_n = maze[ny][nx]
+                            cell = DepthFirstSearch.broken_wall(cell, direc)
+                            cell_n = DepthFirstSearch.broken_wall(cell_n,
+                                                                  reverse[
+                                                                    direc])
+                            maze[y][x] = cell
+                            maze[ny][nx] = cell_n
+                            yield maze
+            if count > min_break:
+                break
+        return maze
+
 
 class Kruskal(MazeGenerator):
+
     class Set:
         def __init__(self, cells: list[int]) -> None:
             self.cells: list[int] = cells
@@ -118,6 +175,8 @@ class Kruskal(MazeGenerator):
         cells_ft = None
         if height > 10 and width > 10:
             cells_ft = self.get_cell_ft(width, height)
+        if cells_ft and (self.start in cells_ft or self.end in cells_ft):
+            cells_ft = None
 
         if seed is not None:
             np.random.seed(seed)
@@ -146,10 +205,23 @@ class Kruskal(MazeGenerator):
                     len(sets.sets) == 19 and cells_ft is not None
                 ):
                     break
-        return self.walls_to_maze(walls, height, width)
+        print(f"nb sets: {len(sets.sets)}")
+        maze = self.walls_to_maze(walls, height, width)
+        if self.perfect is False:
+            gen = Kruskal.unperfect_maze(width, height, maze,
+                                         cells_ft)
+            for res in gen:
+                maze = res
+                yield maze
+        return maze
 
 
 class DepthFirstSearch(MazeGenerator):
+    def __init__(self, start: bool, end: bool, perfect: bool) -> None:
+        self.start = (start[0] - 1, start[1] - 1)
+        self.end = (end[0] - 1, end[1] - 1)
+        self.perfect = perfect
+        self.forty_two: set | None = None
 
     def generator(
         self, height: int, width: int, seed: int = None
@@ -157,9 +229,15 @@ class DepthFirstSearch(MazeGenerator):
         if seed is not None:
             np.random.seed(seed)
         maze = self.init_maze(width, height)
-        forty_two = self.get_cell_ft(width, height)
+        if width > 9 and height > 9:
+            self.forty_two = self.get_cell_ft(width, height)
         visited = np.zeros((height, width), dtype=bool)
-        visited = self.lock_cell_ft(visited, forty_two)
+        if (
+            self.forty_two
+            and self.start not in self.forty_two
+            and self.end not in self.forty_two
+        ):
+            visited = self.lock_cell_ft(visited, self.forty_two)
         path = list()
         w_h = (width, height)
         coord = (0, 0)
@@ -190,6 +268,12 @@ class DepthFirstSearch(MazeGenerator):
             x, y = coord
             maze[y][x] = self.broken_wall(maze[y][x], wall_r)
             yield maze
+        if self.perfect is False:
+            gen = DepthFirstSearch.unperfect_maze(width, height, maze,
+                                                  self.forty_two)
+            for res in gen:
+                maze = res
+                yield maze
         return maze
 
     @staticmethod
@@ -250,7 +334,7 @@ class DepthFirstSearch(MazeGenerator):
         return {"N": "S", "S": "N", "W": "E", "E": "W"}[direction]
 
     @staticmethod
-    def back_on_step(path: list, w_h: tuple, visited: np.array) -> list:
+    def back_on_step(path: list, w_h: tuple, visited: np.ndarray) -> list:
         while path:
             last = path[-1]
             if DepthFirstSearch.random_cells(visited, last, w_h):

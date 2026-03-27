@@ -54,12 +54,14 @@ class DataMaze:
             res.update({key: DataMaze.convert_bool(data[key])})
         res.update({"OUTPUT_FILE": data["OUTPUT_FILE"]})
         res.update(
-            DataMaze.get_solver_generator(data, res["ENTRY"], res["EXIT"])
+            DataMaze.get_solver_generator(data, res["ENTRY"], res["EXIT"],
+                                          res["PERFECT"])
         )
         return res
 
     @staticmethod
-    def get_solver_generator(data: dict, entry: int, exit: int) -> dict:
+    def get_solver_generator(data: dict, entry: tuple, exit: tuple,
+                             perfect: bool) -> dict:
         available_generator = {
             "Kruskal": Kruskal,
             "DFS": DepthFirstSearch,
@@ -68,7 +70,8 @@ class DataMaze:
             "AStar": AStar,
         }
         res = {}
-        res["GENERATOR"] = available_generator[data["GENERATOR"]]()
+        res["GENERATOR"] = available_generator[data["GENERATOR"]](entry, exit,
+                                                                  perfect)
         res["SOLVER"] = available_solver[data["SOLVER"]](entry, exit)
         return res
 
