@@ -1,9 +1,10 @@
-from typing import Any
+from typing import Any, Generator
 from src.AMazeIng import AMazeIng
 from src.parsing import Parsing
 from mlx.mlx import Mlx
 import numpy as np
 import math
+import time
 
 
 class MazeMLX:
@@ -12,7 +13,6 @@ class MazeMLX:
         self.height = height
         self.width = width
         self.mlx_ptr = self.mlx.mlx_init()
-        self.generator = None
         self.win_ptr = self.mlx.mlx_new_window(
             self.mlx_ptr, width, height, "amazing"
         )
@@ -80,13 +80,14 @@ class MazeMLX:
         )
 
     def put_block(self, ul: tuple[int, int], dr: tuple[int, int]) -> None:
-        for y in range(ul[1], dr[1]):
+        for y in range(min(ul[1], dr[1]), max(dr[1], ul[1])):
             self.put_line((min(ul[0], dr[0]), y), (max(ul[0], dr[0]), y))
 
-    def put_path(self, amazing: AMazeIng) -> None:
+    def put_path(self, amazing: AMazeIng):
         path = amazing.solve_path()
         print(path)
         actual = amazing.entry
+        actual = (actual[0] - 1, actual[1] - 1)
         maze = amazing.maze.get_maze()
         if maze is None:
             return
@@ -101,48 +102,59 @@ class MazeMLX:
                 else (self.width - margin) // len(maze[0])
             )
         )
-
+        self.update_maze(maze)
         for i in range(len(path)):
+            self.mlx.mlx_clear_window(self.mlx_ptr, self.win_ptr)
             ul = (
-                (actual[0]) * cell_size + margin + 6,
-                (actual[1]) * cell_size + 6 + margin,
+                (actual[0]) * cell_size + margin + 12,
+                (actual[1]) * cell_size + 12 + margin,
             )
             dr = (
                 (actual[0]) * cell_size + cell_size + margin - 12,
                 (actual[1]) * cell_size + cell_size - 12 + margin,
             )
             self.put_block(ul, dr)
-            x0 = actual[0] * cell_size + margin + 3
-            y0 = actual[1] * cell_size + margin + 3
-            x1 = actual[0] * cell_size + cell_size + margin - 6
-            y1 = actual[1] * cell_size + cell_size + margin - 6
-            if i == len(path) - 1:
-                continue
+            self.mlx.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0
+            )
+            x0 = actual[0] * cell_size + margin + 12
+            y0 = actual[1] * cell_size + margin + 12
+            x1 = actual[0] * cell_size + cell_size + margin - 12
+            y1 = actual[1] * cell_size + cell_size + margin - 12
+            yield
             match path[i]:
                 case "N":
-                    self.put_line((x0, y0), (x1, y0))
+                    self.put_block((x0, y0), (x1, y0 - 24))
                     actual = (actual[0], actual[1] - 1)
                 case "E":
-                    self.put_line((x1, y0), (x1, y1))
+                    self.put_block((x1, y0), (x1 + 24, y1))
                     actual = (actual[0] + 1, actual[1])
                 case "S":
-                    self.put_line((x0, y1), (x1, y1))
+                    self.put_block((x0, y1), (x1, y1 + 24))
                     actual = (actual[0], actual[1] + 1)
                 case "W":
-                    self.put_line((x0, y0), (x0, y1))
+                    self.put_block((x0, y0), (x0 - 24, y1))
                     actual = (actual[0] - 1, actual[1])
+        ul = (
+            (actual[0]) * cell_size + margin + 12,
+            (actual[1]) * cell_size + 12 + margin,
+        )
+        dr = (
+            (actual[0]) * cell_size + cell_size + margin - 12,
+            (actual[1]) * cell_size + cell_size - 12 + margin,
+        )
+        self.put_block(ul, dr)
         self.mlx.mlx_put_image_to_window(
             self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0
         )
+        return
 
     def close_loop(self, _: Any):
         self.mlx.mlx_loop_exit(self.mlx_ptr)
 
-    def gen_maze(self, amazing: AMazeIng) -> None:
-        self.generator = amazing.generate()
-
     def start(self, amazing: AMazeIng) -> None:
-        self.gen_maze(amazing)
+        self.path_printer = self.put_path(amazing)
+        self.generator = amazing.generate()
         self.mlx.mlx_loop_hook(self.mlx_ptr, self.render, amazing)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_loop(self.mlx_ptr)
@@ -153,7 +165,11 @@ class MazeMLX:
             self.update_maze(amazing.maze.get_maze())
             # time.sleep(0.01)
         except StopIteration:
-            self.put_path(amazing)
+            try:
+                next(self.path_printer)
+                time.sleep(0.03)
+            except StopIteration:
+                pass
 
 
 def main() -> None:
