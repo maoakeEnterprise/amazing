@@ -76,7 +76,64 @@ class MazeMLX:
                 if maze[y][x].get_west():
                     self.put_line((x0, y0), (x0, y1))
         self.mlx.mlx_put_image_to_window(
-            self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0)
+            self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0
+        )
+
+    def put_block(self, ul: tuple[int, int], dr: tuple[int, int]) -> None:
+        for y in range(ul[1], dr[1]):
+            self.put_line((min(ul[0], dr[0]), y), (max(ul[0], dr[0]), y))
+
+    def put_path(self, amazing: AMazeIng) -> None:
+        path = amazing.solve_path()
+        print(path)
+        actual = amazing.entry
+        maze = amazing.maze.get_maze()
+        if maze is None:
+            return
+        margin = math.trunc(
+            math.sqrt(self.width if self.width > self.height else self.height)
+            // 2
+        )
+        cell_size = math.trunc(
+            (
+                (self.height - margin) // len(maze)
+                if self.height > self.width
+                else (self.width - margin) // len(maze[0])
+            )
+        )
+
+        for i in range(len(path)):
+            ul = (
+                (actual[0]) * cell_size + margin + 6,
+                (actual[1]) * cell_size + 6 + margin,
+            )
+            dr = (
+                (actual[0]) * cell_size + cell_size + margin - 12,
+                (actual[1]) * cell_size + cell_size - 12 + margin,
+            )
+            self.put_block(ul, dr)
+            x0 = actual[0] * cell_size + margin + 3
+            y0 = actual[1] * cell_size + margin + 3
+            x1 = actual[0] * cell_size + cell_size + margin - 6
+            y1 = actual[1] * cell_size + cell_size + margin - 6
+            if i == len(path) - 1:
+                continue
+            match path[i]:
+                case "N":
+                    self.put_line((x0, y0), (x1, y0))
+                    actual = (actual[0], actual[1] - 1)
+                case "E":
+                    self.put_line((x1, y0), (x1, y1))
+                    actual = (actual[0] + 1, actual[1])
+                case "S":
+                    self.put_line((x0, y1), (x1, y1))
+                    actual = (actual[0], actual[1] + 1)
+                case "W":
+                    self.put_line((x0, y0), (x0, y1))
+                    actual = (actual[0] - 1, actual[1])
+        self.mlx.mlx_put_image_to_window(
+            self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0
+        )
 
     def close_loop(self, _: Any):
         self.mlx.mlx_loop_exit(self.mlx_ptr)
@@ -96,7 +153,7 @@ class MazeMLX:
             self.update_maze(amazing.maze.get_maze())
             # time.sleep(0.01)
         except StopIteration:
-            pass
+            self.put_path(amazing)
 
 
 def main() -> None:
