@@ -33,7 +33,7 @@ class AMazeIng(BaseModel):
         return
 
     def solve_path(self) -> str:
-        return self.solver.solve(self.maze)
+        return self.solver.solve(self.maze, self.height, self.width)
 
     def __str__(self) -> str:
         res = self.maze.__str__()
