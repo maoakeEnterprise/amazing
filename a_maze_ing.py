@@ -1,4 +1,4 @@
-from typing import Any, Generator
+from typing import Any
 from src.AMazeIng import AMazeIng
 from src.parsing import Parsing
 from mlx import Mlx
@@ -172,6 +172,7 @@ class MazeMLX:
 
     def start(self, amazing: AMazeIng) -> None:
         self.restart_maze(amazing)
+        self.restart_path(amazing)
         self.mlx.mlx_loop_hook(self.mlx_ptr, self.render_maze, amazing)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_hook(
