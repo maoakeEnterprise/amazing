@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from .Maze import Maze
+from typing import Any
 import numpy as np
 
 
@@ -15,134 +16,154 @@ class MazeSolver(ABC):
 
 
 class AStar(MazeSolver):
+    class Node:
+        def __init__(
+            self,
+            coordinate: tuple[int, int],
+            g: int,
+            h: int,
+            f: int,
+            parent: Any,
+        ) -> None:
+            self.coordinate = coordinate
+            self.g = g
+            self.h = h
+            self.f = f
+            self.parent = parent
+
+        def __eq__(self, value: object, /) -> bool:
+            return value == self.coordinate
 
     def __init__(self, start: tuple[int, int], end: tuple[int, int]) -> None:
         super().__init__(start, end)
         self.path = []
 
-    def f(self, n):
-        def g() -> int:
-            return len(self.path) + 1
+    def g(self, n: tuple[int, int]) -> int:
+        return len(self.path) + 1
 
-        def h(n: tuple[int, int]) -> int:
-            return (
-                max(n[0], self.end[0])
-                - min(n[0], self.end[0])
-                + max(n[1], self.end[1])
-                - min(n[1], self.end[1])
-            )
+    def h(self, n: tuple[int, int]) -> int:
+        return (
+            max(n[0], self.end[0])
+            - min(n[0], self.end[0])
+            + max(n[1], self.end[1])
+            - min(n[1], self.end[1])
+        )
 
-        return g() + h(n)
+    def f(self, n: tuple[int, int]) -> int:
+        return self.g(n) + self.h(n)
 
-    def best_path(
+    def get_paths(
         self,
         maze: np.ndarray,
         actual: tuple[int, int],
-        last: str | None,
-    ) -> dict[str, int]:
-        path = {
-            "N": (
-                self.f((actual[0], actual[1] - 1))
-                if not maze[actual[1]][actual[0]].get_north() and actual[1] > 0
+        close: list,
+    ) -> list[tuple[int, int]]:
+        path = [
+            (
+                (actual[0], actual[1] - 1)
+                if not maze[actual[1]][actual[0]].get_north()
+                and actual[1] > 0
+                and (actual[0], actual[1] - 1)
+                not in [n.coordinate for n in close]
                 else None
             ),
-            "E": (
-                self.f((actual[0] + 1, actual[1]))
+            (
+                (actual[0] + 1, actual[1])
                 if not maze[actual[1]][actual[0]].get_est()
                 and actual[0] < len(maze[0]) - 1
+                and (actual[0] + 1, actual[1])
+                not in [n.coordinate for n in close]
                 else None
             ),
-            "S": (
-                self.f((actual[0], actual[1] + 1))
+            (
+                (actual[0], actual[1] + 1)
                 if not maze[actual[1]][actual[0]].get_south()
                 and actual[1] < len(maze) - 1
+                and (actual[0], actual[1] + 1)
+                not in [n.coordinate for n in close]
                 else None
             ),
-            "W": (
-                self.f((actual[0] - 1, actual[1]))
-                if not maze[actual[1]][actual[0]].get_west() and actual[0] > 0
+            (
+                (actual[0] - 1, actual[1])
+                if not maze[actual[1]][actual[0]].get_west()
+                and actual[0] > 0
+                and (actual[0] - 1, actual[1])
+                not in [n.coordinate for n in close]
                 else None
             ),
-        }
-        return {
-            k: v
-            for k, v in sorted(path.items(), key=lambda item: item[0])
-            if v is not None and k != last
-        }
+        ]
+        return [p for p in path if p is not None]
 
-    def get_opposit(self, dir: str) -> str:
-        match dir:
-            case "N":
-                return "S"
-            case "E":
-                return "W"
-            case "S":
-                return "N"
-            case "W":
-                return "E"
-            case _:
-                return ""
+    def get_path(self, maze: np.ndarray) -> list:
+        open: list[AStar.Node] = []
+        close: list[AStar.Node] = []
 
-    def get_next_pos(
-        self, dir: str, actual: tuple[int, int]
-    ) -> tuple[int, int]:
-        match dir:
-            case "N":
-                return (actual[0], actual[1] - 1)
-            case "E":
-                return (actual[0] + 1, actual[1])
-            case "S":
-                return (actual[0], actual[1] + 1)
-            case "W":
-                return (actual[0] - 1, actual[1])
-            case _:
-                return actual
-
-    def get_path(self, maze: np.ndarray) -> str | None:
-        self.path = [(self.start, self.best_path(maze, self.start, None))]
-        visited = [self.start]
-        while len(self.path) > 0 and self.path[-1][0] != self.end:
-            if len(self.path[-1][1]) == 0:
-                self.path.pop(-1)
-                if len(self.path) == 0:
-                    break
-                k = next(iter(self.path[-1][1]))
-                self.path[-1][1].pop(k)
-                continue
-
-            while len(self.path[-1][1]) > 0:
-                next_pos = self.get_next_pos(
-                    list(self.path[-1][1].keys())[0], self.path[-1][0]
-                )
-                if next_pos in visited:
-                    k = next(iter(self.path[-1][1]))
-                    self.path[-1][1].pop(k)
-                else:
-                    break
-            if len(self.path[-1][1]) == 0:
-                self.path.pop(-1)
-                continue
-
-            pre = self.get_opposit(list(self.path[-1][1].keys())[0])
-            self.path.append(
-                (
-                    next_pos,
-                    self.best_path(maze, next_pos, pre),
-                )
+        open.append(
+            AStar.Node(
+                self.start,
+                0,
+                self.h(self.start),
+                self.f(self.start),
+                None,
             )
-            visited += [next_pos]
-        if len(self.path) == 0:
-            return None
-        self.path[-1] = (self.end, {})
-        return "".join(
-            str(list(c[1].keys())[0]) for c in self.path if len(c[1]) > 0
         )
 
-    def solve(self, maze: Maze, height: int = None, width: int = None) -> str:
-        res = self.get_path(maze.get_maze())
-        if res is None:
-            raise Exception("Path not found")
+        while len(open) > 0:
+            to_check = sorted(open, key=lambda x: x.f)[0]
+            open.remove(to_check)
+            close.append(to_check)
+            if to_check.coordinate == self.end:
+                return close
+            paths = self.get_paths(maze, to_check.coordinate, close)
+            for path in paths:
+                open.append(
+                    self.Node(
+                        path,
+                        to_check.g + 1,
+                        self.h(path),
+                        self.h(path) + to_check.g + 1,
+                        to_check,
+                    )
+                )
+        raise Exception("Path not found")
+
+    def get_rev_dir(self, current: Node) -> str:
+        if current.parent.coordinate == (
+            current.coordinate[0],
+            current.coordinate[1] - 1,
+        ):
+            return "S"
+        elif current.parent.coordinate == (
+            current.coordinate[0] + 1,
+            current.coordinate[1],
+        ):
+            return "W"
+        elif current.parent.coordinate == (
+            current.coordinate[0],
+            current.coordinate[1] + 1,
+        ):
+            return "N"
+        elif current.parent.coordinate == (
+            current.coordinate[0] - 1,
+            current.coordinate[1],
+        ):
+            return "E"
+        else:
+            raise Exception("Translate error: AStar path not found")
+
+    def translate(self, close: list) -> str:
+        current = close[-1]
+        res = ""
+        while True:
+            res = self.get_rev_dir(current) + res
+            current = current.parent
+            if current.coordinate == self.start:
+                break
         return res
+
+    def solve(self, maze: Maze, height: int = None, width: int = None) -> str:
+        path = self.get_path(maze.get_maze())
+        return self.translate(path)
 
 
 class DepthFirstSearchSolver(MazeSolver):
