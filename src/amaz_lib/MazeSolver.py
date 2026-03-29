@@ -166,6 +166,13 @@ class DepthFirstSearchSolver(MazeSolver):
 
     def solve(self, maze: Maze, height: int = None,
               width: int = None) -> str:
+        res = list()
+        for _ in range(60):
+            res.append(self.get_path(maze, height, width))
+        return min(res, key=lambda x: len(x))
+
+    def get_path(self, maze: Maze, height: int = None,
+                 width: int = None) -> str:
         path_str = ""
         visited = np.zeros((height, width), dtype=bool)
         path = list()
