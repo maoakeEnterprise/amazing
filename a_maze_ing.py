@@ -116,6 +116,7 @@ class MazeMLX:
             )
         )
         self.update_maze(maze)
+        self.color_ft(maze)
         for i in range(len(path)):
             ul = (
                 (actual[0]) * cell_size + margin + 12,
@@ -157,6 +158,38 @@ class MazeMLX:
         self.redraw_image()
         return
 
+    def color_ft(self, maze: np.ndarray):
+        self.clear_image()
+        margin = math.trunc(
+            math.sqrt(self.width if self.width > self.height else self.height)
+            // 2
+        )
+        line_len = math.trunc(
+            (
+                (self.height - margin) // len(maze)
+                if self.height > self.width
+                else (self.width - margin) // len(maze[0])
+            )
+        )
+        for y in range(len(maze)):
+            for x in range(len(maze[0])):
+                x0 = x * line_len + margin
+                y0 = y * line_len + margin
+                x1 = x * line_len + line_len + margin
+                y1 = y * line_len + line_len + margin
+
+                if maze[y][x].get_north():
+                    self.put_line((x0, y0), (x1, y0))
+                if maze[y][x].get_est():
+                    self.put_line((x1, y0), (x1, y1))
+                if maze[y][x].get_south():
+                    self.put_line((x0, y1), (x1, y1))
+                if maze[y][x].get_west():
+                    self.put_line((x0, y0), (x0, y1))
+                if maze[y][x].value == 15:
+                    self.put_block((x0, y0), (x1, y1))
+        self.redraw_image()
+
     def close_loop(self, _: Any):
         self.mlx.mlx_loop_exit(self.mlx_ptr)
 
@@ -172,7 +205,6 @@ class MazeMLX:
 
     def start(self, amazing: AMazeIng) -> None:
         self.restart_maze(amazing)
-        self.restart_path(amazing)
         self.mlx.mlx_loop_hook(self.mlx_ptr, self.render_maze, amazing)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_hook(
@@ -199,8 +231,11 @@ class MazeMLX:
             self.update_maze(amazing.maze.get_maze())
             # time.sleep(0.01)
         except StopIteration:
+            # self.color_ft(amazing)
             if self.path_printer is not None:
                 self.render_path()
+            else:
+                self.color_ft(amazing.maze.get_maze())
 
 
 def main() -> None:

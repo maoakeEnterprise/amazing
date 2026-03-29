@@ -167,7 +167,7 @@ class DepthFirstSearchSolver(MazeSolver):
     def solve(self, maze: Maze, height: int = None,
               width: int = None) -> str:
         res = list()
-        for _ in range(60):
+        for _ in range(50):
             res.append(self.get_path(maze, height, width))
         return min(res, key=lambda x: len(x))
 
