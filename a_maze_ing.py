@@ -43,8 +43,8 @@ class MazeMLX:
     def put_pixel(self, x, y) -> None:
         offset = y * self.size_line + x * (self.bpp // 8)
 
-        self.buf[offset + 0] = 0xFF
-        self.buf[offset + 1] = 0xFF
+        self.buf[offset + 0] = 0x00
+        self.buf[offset + 1] = 0x00
         self.buf[offset + 2] = 0xFF
         if self.bpp >= 32:
             self.buf[offset + 3] = 0xFF
