@@ -136,7 +136,6 @@ class MazeMLX:
                 (actual[1]) * cell_size + cell_size - 12 + margin,
             )
             self.put_block(ul, dr)
-            # self.redraw_image()
             x0 = actual[0] * cell_size + margin + 12
             y0 = actual[1] * cell_size + margin + 12
             x1 = actual[0] * cell_size + cell_size + margin - 12
@@ -164,7 +163,6 @@ class MazeMLX:
             (actual[1]) * cell_size + cell_size - 12 + margin,
         )
         self.put_block(ul, dr)
-        # self.redraw_image()
         return
 
     def draw_ft(self, maze: np.ndarray):
@@ -217,7 +215,7 @@ class MazeMLX:
             if self.path_printer and self.print_path:
                 self.render_path()
             else:
-                self.update_maze(amazing.maze.get_maze())
+                # self.update_maze(amazing.maze.get_maze())
                 self.draw_ft(amazing.maze.get_maze())
         self.redraw_image()
 
@@ -248,7 +246,6 @@ class MazeMLX:
             next(self.generator)
             self.update_maze(amazing.maze.get_maze())
             return False
-            # time.sleep(0.01)
         except StopIteration:
             pass
         return True
