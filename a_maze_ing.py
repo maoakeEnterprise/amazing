@@ -81,9 +81,16 @@ class MazeMLX:
             for y in range(min(sy, ey), max(sy, ey) + 1):
                 self.put_pixel(sx, y, color)
 
-    def put_block(self, ul: tuple[int, int], dr: tuple[int, int]) -> None:
+    def put_block(
+        self,
+        ul: tuple[int, int],
+        dr: tuple[int, int],
+        color: list | None = None,
+    ) -> None:
         for y in range(min(ul[1], dr[1]), max(dr[1], ul[1])):
-            self.put_line((min(ul[0], dr[0]), y), (max(ul[0], dr[0]), y))
+            self.put_line(
+                (min(ul[0], dr[0]), y), (max(ul[0], dr[0]), y), color
+            )
 
     @staticmethod
     def random_color_ft() -> Any:
@@ -217,12 +224,12 @@ class MazeMLX:
         margin_y = (self.height - maze_height) // 2
 
         ul = (
-            (entry[0]) * line_len + margin_x + 3,
-            (entry[1]) * line_len + 3 + margin_y,
+            (entry[0] - 1) * line_len + margin_x + 3,
+            (entry[1] - 1) * line_len + 3 + margin_y,
         )
         dr = (
-            (entry[0]) * line_len + line_len + margin_x - 3,
-            (entry[1]) * line_len + line_len - 3 + margin_y,
+            (entry[0] - 1) * line_len + line_len + margin_x - 3,
+            (entry[1] - 1) * line_len + line_len - 3 + margin_y,
         )
         print(f"ul: {ul}; dr: {dr}")
         self.put_block(ul, dr)
