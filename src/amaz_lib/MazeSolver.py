@@ -11,7 +11,7 @@ class MazeSolver(ABC):
 
     @abstractmethod
     def solve(
-        self, maze: Maze, height: int = None, width: int = None
+        self, maze: Maze, height: int | None = None, width: int | None = None
     ) -> str: ...
 
 
@@ -38,9 +38,6 @@ class AStar(MazeSolver):
         super().__init__(start, end)
         self.path = []
 
-    def g(self, n: tuple[int, int]) -> int:
-        return len(self.path) + 1
-
     def h(self, n: tuple[int, int]) -> int:
         return (
             max(n[0], self.end[0])
@@ -48,9 +45,6 @@ class AStar(MazeSolver):
             + max(n[1], self.end[1])
             - min(n[1], self.end[1])
         )
-
-    def f(self, n: tuple[int, int]) -> int:
-        return self.g(n) + self.h(n)
 
     def get_paths(
         self,
@@ -103,7 +97,7 @@ class AStar(MazeSolver):
                 self.start,
                 0,
                 self.h(self.start),
-                self.f(self.start),
+                self.h(self.start),
                 None,
             )
         )
@@ -161,7 +155,9 @@ class AStar(MazeSolver):
                 break
         return res
 
-    def solve(self, maze: Maze, height: int = None, width: int = None) -> str:
+    def solve(
+        self, maze: Maze, height: int | None = None, width: int | None = None
+    ) -> str:
         path = self.get_path(maze.get_maze())
         return self.translate(path)
 
@@ -170,7 +166,9 @@ class DepthFirstSearchSolver(MazeSolver):
     def __init__(self, start, end):
         super().__init__(start, end)
 
-    def solve(self, maze: Maze, height: int = None, width: int = None) -> str:
+    def solve(
+        self, maze: Maze, height: int | None = None, width: int | None = None
+    ) -> str:
         path_str = ""
         visited = np.zeros((height, width), dtype=bool)
         path = list()

@@ -41,6 +41,8 @@ class MazeMLX:
         )
 
     def put_pixel(self, x, y) -> None:
+        if x < 0 or y < 0 or x >= self.width or y >= self.height:
+            return
         offset = y * self.size_line + x * (self.bpp // 8)
 
         self.buf[offset + 0] = 0xFF
@@ -64,23 +66,23 @@ class MazeMLX:
 
     def update_maze(self, maze: np.ndarray) -> None:
         self.clear_image()
-        margin = math.trunc(
-            math.sqrt(self.width if self.width > self.height else self.height)
-            // 2
-        )
-        line_len = math.trunc(
-            (
-                (self.height - margin) // len(maze)
-                if self.height > self.width
-                else (self.width - margin) // len(maze[0])
-            )
-        )
+
+        rows = len(maze)
+        cols = len(maze[0])
+
+        line_len = min(self.width // cols, self.height // rows)
+
+        maze_width = cols * line_len
+        maze_height = rows * line_len
+
+        margin_x = (self.width - maze_width) // 2
+        margin_y = (self.height - maze_height) // 2
         for y in range(len(maze)):
             for x in range(len(maze[0])):
-                x0 = x * line_len + margin
-                y0 = y * line_len + margin
-                x1 = x * line_len + line_len + margin
-                y1 = y * line_len + line_len + margin
+                x0 = x * line_len + margin_x
+                y0 = y * line_len + margin_y
+                x1 = x * line_len + line_len + margin_x
+                y1 = y * line_len + line_len + margin_y
 
                 if maze[y][x].get_north():
                     self.put_line((x0, y0), (x1, y0))
@@ -104,33 +106,34 @@ class MazeMLX:
         maze = amazing.maze.get_maze()
         if maze is None:
             return
-        margin = math.trunc(
-            math.sqrt(self.width if self.width > self.height else self.height)
-            // 2
-        )
-        cell_size = math.trunc(
-            (
-                (self.height - margin) // len(maze)
-                if self.height > self.width
-                else (self.width - margin) // len(maze[0])
-            )
-        )
+
+        rows = len(maze)
+        cols = len(maze[0])
+
+        line_len = min(self.width // cols, self.height // rows)
+
+        maze_width = cols * line_len
+        maze_height = rows * line_len
+
+        margin_x = (self.width - maze_width) // 2
+        margin_y = (self.height - maze_height) // 2
+
         self.update_maze(maze)
         for i in range(len(path)):
             ul = (
-                (actual[0]) * cell_size + margin + 12,
-                (actual[1]) * cell_size + 12 + margin,
+                (actual[0]) * line_len + margin_x + 12,
+                (actual[1]) * line_len + 12 + margin_y,
             )
             dr = (
-                (actual[0]) * cell_size + cell_size + margin - 12,
-                (actual[1]) * cell_size + cell_size - 12 + margin,
+                (actual[0]) * line_len + line_len + margin_x - 12,
+                (actual[1]) * line_len + line_len - 12 + margin_y,
             )
             self.put_block(ul, dr)
             self.redraw_image()
-            x0 = actual[0] * cell_size + margin + 12
-            y0 = actual[1] * cell_size + margin + 12
-            x1 = actual[0] * cell_size + cell_size + margin - 12
-            y1 = actual[1] * cell_size + cell_size + margin - 12
+            x0 = actual[0] * line_len + margin_x + 12
+            y0 = actual[1] * line_len + margin_y + 12
+            x1 = actual[0] * line_len + line_len + margin_x - 12
+            y1 = actual[1] * line_len + line_len + margin_y - 12
             yield
             match path[i]:
                 case "N":
@@ -146,12 +149,12 @@ class MazeMLX:
                     self.put_block((x0, y0), (x0 - 24, y1))
                     actual = (actual[0] - 1, actual[1])
         ul = (
-            (actual[0]) * cell_size + margin + 12,
-            (actual[1]) * cell_size + 12 + margin,
+            (actual[0]) * line_len + margin_x + 12,
+            (actual[1]) * line_len + 12 + margin_y,
         )
         dr = (
-            (actual[0]) * cell_size + cell_size + margin - 12,
-            (actual[1]) * cell_size + cell_size - 12 + margin,
+            (actual[0]) * line_len + line_len + margin_x - 12,
+            (actual[1]) * line_len + line_len - 12 + margin_y,
         )
         self.put_block(ul, dr)
         self.redraw_image()
