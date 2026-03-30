@@ -45,26 +45,49 @@ class MazeMLX:
             "1: regen; 2: path; 3: color; 4: quit;",
         )
 
-    def put_pixel(self, x, y) -> None:
+    def put_pixel(self, x, y, color: list | None = None) -> None:
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return
         offset = y * self.size_line + x * (self.bpp // 8)
 
-        self.buf[offset + 0] = self.color[0]
-        self.buf[offset + 1] = self.color[1]
-        self.buf[offset + 2] = self.color[2]
-        if self.bpp >= 32:
-            self.buf[offset + 3] = self.color[3]
+        if color:
+            self.buf[offset + 0] = color[0]
+            self.buf[offset + 1] = color[1]
+            self.buf[offset + 2] = color[2]
+            if self.bpp >= 32:
+                self.buf[offset + 3] = color[3]
+        else:
+            self.buf[offset + 0] = self.color[0]
+            self.buf[offset + 1] = self.color[1]
+            self.buf[offset + 2] = self.color[2]
+            if self.bpp >= 32:
+                self.buf[offset + 3] = self.color[3]
 
-    def put_line(self, start: tuple[int, int], end: tuple[int, int]) -> None:
+    @staticmethod
+    def random_color_ft() -> Any:
+        colors = [
+            [0xFF, 0xBF, 0x00, 0xFF],  # blue
+            [0xFF, 0x00, 0x80, 0xFF],  # purple
+            [0xFF, 0x00, 0xFF, 0xFF],  # rose
+        ]
+        while True:
+            for color in colors:
+                yield color
+
+    def put_line(
+        self,
+        start: tuple[int, int],
+        end: tuple[int, int],
+        color: list | None = None,
+    ) -> None:
         sx, sy = start
         ex, ey = end
         if sy == ey:
             for x in range(min(sx, ex), max(sx, ex) + 1):
-                self.put_pixel(x, sy)
+                self.put_pixel(x, sy, color)
         if sx == ex:
             for y in range(min(sy, ey), max(sy, ey) + 1):
-                self.put_pixel(sx, y)
+                self.put_pixel(sx, y, color)
 
     def put_block(self, ul: tuple[int, int], dr: tuple[int, int]) -> None:
         for y in range(min(ul[1], dr[1]), max(dr[1], ul[1])):
@@ -202,7 +225,7 @@ class MazeMLX:
         self.put_block(ul, dr)
         self.redraw_image()
 
-    def draw_ft(self, maze: np.ndarray):
+    def draw_ft(self, maze: np.ndarray, color: list | None = None):
         self.clear_image()
         margin = math.trunc(
             math.sqrt(self.width if self.width > self.height else self.height)
@@ -252,7 +275,9 @@ class MazeMLX:
     def draw_image(self, amazing: AMazeIng) -> None:
         if self.render_maze(amazing):
             if self.path_printer and self.print_path:
-                self.render_path()
+                if self.render_path():
+                    color = next(self.color_gen_ft)
+                    color
             else:
                 self.draw_ft(amazing.maze.get_maze())
         self.redraw_image()
@@ -260,6 +285,7 @@ class MazeMLX:
     def start(self, amazing: AMazeIng) -> None:
         self.restart_maze(amazing)
         self.shift_color()
+        self.shift_color_ft()
         self.mlx.mlx_loop_hook(self.mlx_ptr, self.draw_image, amazing)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_hook(
@@ -276,12 +302,17 @@ class MazeMLX:
     def shift_color(self):
         self.color_gen = self.random_color()
 
-    def render_path(self):
+    def shift_color_ft(self):
+        self.color_gen_ft = self.random_color_ft()
+
+    def render_path(self) -> bool:
         try:
             next(self.path_printer)
             time.sleep(0.03)
+            return False
         except StopIteration:
             pass
+        return True
 
     def render_maze(self, amazing: AMazeIng) -> bool:
         try:
