@@ -232,38 +232,39 @@ class MazeMLX:
             (entry[1] - 1) * line_len + line_len - 3 + margin_y,
         )
         print(f"ul: {ul}; dr: {dr}")
-        self.put_block(ul, dr)
-        self.redraw_image()
+        self.put_block(ul, dr, [0xFF, 0xBF, 0x00, 0x9F])
+
+        ul = (
+            (exit[0] - 1) * line_len + margin_x + 3,
+            (exit[1] - 1) * line_len + 3 + margin_y,
+        )
+        dr = (
+            (exit[0] - 1) * line_len + line_len + margin_x - 3,
+            (exit[1] - 1) * line_len + line_len - 3 + margin_y,
+        )
+        print(f"ul: {ul}; dr: {dr}")
+        self.put_block(ul, dr, [0x00, 0xFF, 0x40, 0x9F])
 
     def draw_ft(self, maze: np.ndarray, color: list | None = None):
-        self.clear_image()
-        margin = math.trunc(
-            math.sqrt(self.width if self.width > self.height else self.height)
-            // 2
-        )
-        line_len = math.trunc(
-            (
-                (self.height - margin) // len(maze)
-                if self.height > self.width
-                else (self.width - margin) // len(maze[0])
-            )
-        )
+
+        rows = len(maze)
+        cols = len(maze[0])
+
+        line_len = min(self.width // cols, self.height // rows)
+
+        maze_width = cols * line_len
+        maze_height = rows * line_len
+
+        margin_x = (self.width - maze_width) // 2
+        margin_y = (self.height - maze_height) // 2
+
         for y in range(len(maze)):
             for x in range(len(maze[0])):
-                x0 = x * line_len + margin
-                y0 = y * line_len + margin
-                x1 = x * line_len + line_len + margin
-                y1 = y * line_len + line_len + margin
-
-                if maze[y][x].get_north():
-                    self.put_line((x0, y0), (x1, y0))
-                if maze[y][x].get_est():
-                    self.put_line((x1, y0), (x1, y1))
-                if maze[y][x].get_south():
-                    self.put_line((x0, y1), (x1, y1))
-                if maze[y][x].get_west():
-                    self.put_line((x0, y0), (x0, y1))
                 if maze[y][x].value == 15:
+                    x0 = x * line_len + margin_x
+                    y0 = y * line_len + margin_y
+                    x1 = x * line_len + line_len + margin_x
+                    y1 = y * line_len + line_len + margin_y
                     self.put_block((x0, y0), (x1, y1))
 
     def draw_image(self, amazing: AMazeIng) -> None:
@@ -301,9 +302,9 @@ class MazeMLX:
         try:
             next(self.generator)
             self.update_maze(amazing.maze.get_maze())
+            self.put_start_end(amazing)
             return False
         except StopIteration:
-            self.put_start_end(amazing)
             pass
         return True
 
