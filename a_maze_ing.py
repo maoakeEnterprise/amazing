@@ -12,6 +12,7 @@ class MazeMLX:
         self.mlx = Mlx()
         self.height = height
         self.width = width
+        self.print_path = False
         self.mlx_ptr = self.mlx.mlx_init()
         self.win_ptr = self.mlx.mlx_new_window(
             self.mlx_ptr, width, height + 200, "A-Maze-Ing"
@@ -101,13 +102,12 @@ class MazeMLX:
                     self.put_line((x0, y1), (x1, y1))
                 if maze[y][x].get_west():
                     self.put_line((x0, y0), (x0, y1))
-        self.redraw_image()
 
     def put_block(self, ul: tuple[int, int], dr: tuple[int, int]) -> None:
         for y in range(min(ul[1], dr[1]), max(dr[1], ul[1])):
             self.put_line((min(ul[0], dr[0]), y), (max(ul[0], dr[0]), y))
 
-    def put_path(self, amazing: AMazeIng):
+    def put_path(self, amazing: AMazeIng) -> Any:
         path = amazing.solve_path()
         print(path)
         actual = amazing.entry
@@ -126,8 +126,6 @@ class MazeMLX:
                 else (self.width - margin) // len(maze[0])
             )
         )
-        self.update_maze(maze)
-        self.draw_ft(maze)
         for i in range(len(path)):
             ul = (
                 (actual[0]) * cell_size + margin + 12,
@@ -138,7 +136,7 @@ class MazeMLX:
                 (actual[1]) * cell_size + cell_size - 12 + margin,
             )
             self.put_block(ul, dr)
-            self.redraw_image()
+            # self.redraw_image()
             x0 = actual[0] * cell_size + margin + 12
             y0 = actual[1] * cell_size + margin + 12
             x1 = actual[0] * cell_size + cell_size + margin - 12
@@ -166,7 +164,7 @@ class MazeMLX:
             (actual[1]) * cell_size + cell_size - 12 + margin,
         )
         self.put_block(ul, dr)
-        self.redraw_image()
+        # self.redraw_image()
         return
 
     def draw_ft(self, maze: np.ndarray):
@@ -199,7 +197,6 @@ class MazeMLX:
                     self.put_line((x0, y0), (x0, y1))
                 if maze[y][x].value == 15:
                     self.put_block((x0, y0), (x1, y1))
-        self.redraw_image()
 
     def close_loop(self, _: Any):
         self.mlx.mlx_loop_exit(self.mlx_ptr)
@@ -209,14 +206,24 @@ class MazeMLX:
             self.restart_maze(amazing)
         if keycode == 50:
             self.restart_path(amazing)
+            self.print_path = True if self.print_path is False else False
         if keycode == 51:
             pass
         if keycode == 52:
             self.close_loop(None)
 
+    def draw_image(self, amazing: AMazeIng) -> None:
+        if self.render_maze(amazing):
+            if self.path_printer and self.print_path:
+                self.render_path()
+            else:
+                self.update_maze(amazing.maze.get_maze())
+                self.draw_ft(amazing.maze.get_maze())
+        self.redraw_image()
+
     def start(self, amazing: AMazeIng) -> None:
         self.restart_maze(amazing)
-        self.mlx.mlx_loop_hook(self.mlx_ptr, self.render_maze, amazing)
+        self.mlx.mlx_loop_hook(self.mlx_ptr, self.draw_image, amazing)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_hook(
             self.win_ptr, 2, 1 << 0, self.handle_key_press, amazing
@@ -236,17 +243,15 @@ class MazeMLX:
         except StopIteration:
             pass
 
-    def render_maze(self, amazing: AMazeIng):
+    def render_maze(self, amazing: AMazeIng) -> bool:
         try:
             next(self.generator)
             self.update_maze(amazing.maze.get_maze())
+            return False
             # time.sleep(0.01)
         except StopIteration:
-            # self.color_ft(amazing)
-            if self.path_printer is not None:
-                self.render_path()
-            else:
-                self.color_ft(amazing.maze.get_maze())
+            pass
+        return True
 
 
 def main() -> None:
