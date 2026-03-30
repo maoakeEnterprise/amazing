@@ -52,6 +52,17 @@ class MazeMLX:
     def clear_image(self) -> None:
         self.buf[:] = b"\x00" * len(self.buf)
 
+    def random_color() -> Any:
+        colors = [
+            [0x00, 0x00, 0xFF, 0xFF],  # red
+            [0x00, 0xFF, 0xFF, 0xFF],  # yellow
+            [0x00, 0xFF, 0x40, 0xFF],  # green
+            [0xFF, 0xBF, 0x00, 0xFF],  # blue
+            [0xFF, 0x00, 0x80, 0xFF],  # purple
+            [0xFF, 0x00, 0xFF, 0xFF],  # rose
+        ]
+        return np.random.choice(colors)
+
     def put_line(self, start: tuple[int, int], end: tuple[int, int]) -> None:
         sx, sy = start
         ex, ey = end
@@ -116,7 +127,7 @@ class MazeMLX:
             )
         )
         self.update_maze(maze)
-        self.color_ft(maze)
+        self.draw_ft(maze)
         for i in range(len(path)):
             ul = (
                 (actual[0]) * cell_size + margin + 12,
@@ -158,7 +169,7 @@ class MazeMLX:
         self.redraw_image()
         return
 
-    def color_ft(self, maze: np.ndarray):
+    def draw_ft(self, maze: np.ndarray):
         self.clear_image()
         margin = math.trunc(
             math.sqrt(self.width if self.width > self.height else self.height)
