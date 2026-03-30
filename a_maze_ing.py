@@ -117,19 +117,24 @@ class MazeMLX:
             for color in colors:
                 yield color
 
-    def update_maze(self, maze: np.ndarray) -> None:
-        self.clear_image()
-
+    def get_margin_line_len(self, maze: np.ndarray) -> tuple[int, int, int]:
         rows = len(maze)
         cols = len(maze[0])
 
-        line_len = min(self.width // cols, self.height // rows)
+        line_len = min(self.width // cols, self.height // rows) - 1
 
         maze_width = cols * line_len
         maze_height = rows * line_len
 
-        margin_x = (self.width - maze_width) // 2
-        margin_y = (self.height - maze_height) // 2
+        margin_x = ((self.width - maze_width) // 2) + 1
+        margin_y = ((self.height - maze_height) // 2) + 1
+
+        return (line_len, margin_x, margin_y)
+
+    def update_maze(self, maze: np.ndarray) -> None:
+        self.clear_image()
+
+        line_len, margin_x, margin_y = self.get_margin_line_len(maze)
         for y in range(len(maze)):
             for x in range(len(maze[0])):
                 x0 = x * line_len + margin_x
@@ -155,16 +160,7 @@ class MazeMLX:
         if maze is None:
             return
 
-        rows = len(maze)
-        cols = len(maze[0])
-
-        line_len = min(self.width // cols, self.height // rows)
-
-        maze_width = cols * line_len
-        maze_height = rows * line_len
-
-        margin_x = (self.width - maze_width) // 2
-        margin_y = (self.height - maze_height) // 2
+        line_len, margin_x, margin_y = self.get_margin_line_len(maze)
 
         for i in range(len(path)):
             ul = (
@@ -212,16 +208,7 @@ class MazeMLX:
         if maze is None:
             return
 
-        rows = len(maze)
-        cols = len(maze[0])
-
-        line_len = min(self.width // cols, self.height // rows)
-
-        maze_width = cols * line_len
-        maze_height = rows * line_len
-
-        margin_x = (self.width - maze_width) // 2
-        margin_y = (self.height - maze_height) // 2
+        line_len, margin_x, margin_y = self.get_margin_line_len(maze)
 
         ul = (
             (entry[0] - 1) * line_len + margin_x + 3,
@@ -231,7 +218,6 @@ class MazeMLX:
             (entry[0] - 1) * line_len + line_len + margin_x - 3,
             (entry[1] - 1) * line_len + line_len - 3 + margin_y,
         )
-        print(f"ul: {ul}; dr: {dr}")
         self.put_block(ul, dr, [0xFF, 0xBF, 0x00, 0x9F])
 
         ul = (
@@ -242,21 +228,10 @@ class MazeMLX:
             (exit[0] - 1) * line_len + line_len + margin_x - 3,
             (exit[1] - 1) * line_len + line_len - 3 + margin_y,
         )
-        print(f"ul: {ul}; dr: {dr}")
         self.put_block(ul, dr, [0x00, 0xFF, 0x40, 0x9F])
 
     def draw_ft(self, maze: np.ndarray, color: list | None = None):
-
-        rows = len(maze)
-        cols = len(maze[0])
-
-        line_len = min(self.width // cols, self.height // rows)
-
-        maze_width = cols * line_len
-        maze_height = rows * line_len
-
-        margin_x = (self.width - maze_width) // 2
-        margin_y = (self.height - maze_height) // 2
+        line_len, margin_x, margin_y = self.get_margin_line_len(maze)
 
         for y in range(len(maze)):
             for x in range(len(maze[0])):
@@ -336,7 +311,7 @@ class MazeMLX:
 def main() -> None:
     mlx = None
     try:
-        mlx = MazeMLX(1000, 1000)
+        mlx = MazeMLX(1800, 1800)
         config = Parsing.DataMaze.get_data_maze("config.txt")
         amazing = AMazeIng(**config)
         mlx.start(amazing)
