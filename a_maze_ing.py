@@ -249,7 +249,9 @@ class MazeMLX:
                     color = next(self.color_gen_ft)
                     color
             else:
+                self.update_maze(amazing.maze.get_maze())
                 self.draw_ft(amazing.maze.get_maze())
+            self.put_start_end(amazing)
         self.redraw_image()
 
     def shift_color(self):
@@ -277,14 +279,12 @@ class MazeMLX:
         try:
             next(self.generator)
             self.update_maze(amazing.maze.get_maze())
-            self.put_start_end(amazing)
             return False
         except StopIteration:
             pass
         return True
 
     def handle_key_press(self, keycode: int, amazing: AMazeIng) -> None:
-        print(keycode)
         if keycode == 49:
             self.restart_maze(amazing)
             self.print_path = False
@@ -298,7 +298,6 @@ class MazeMLX:
             self.close_loop(None)
 
     def handle_key_press_mteriier(self, keycode: int, amazing: AMazeIng) -> None:
-        print(keycode)
         if keycode == 38:
             self.restart_maze(amazing)
             self.print_path = False
@@ -326,7 +325,7 @@ class MazeMLX:
 def main() -> None:
     mlx = None
     try:
-        mlx = MazeMLX(1800, 1800)
+        mlx = MazeMLX(1000, 1000)
         config = Parsing.DataMaze.get_data_maze("config.txt")
         amazing = AMazeIng(**config)
         mlx.start(amazing)
