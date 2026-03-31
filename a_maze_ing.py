@@ -231,12 +231,11 @@ class MazeMLX:
             (entry[0] - 1) * line_len + line_len + margin_x - 3,
             (entry[1] - 1) * line_len + line_len - 3 + margin_y,
         )
-        print(f"ul: {ul}; dr: {dr}")
+        # print(f"ul: {ul}; dr: {dr}")
         self.put_block(ul, dr)
         self.redraw_image()
 
     def draw_ft(self, maze: np.ndarray, color: list | None = None):
-        self.clear_image()
         margin = math.trunc(
             math.sqrt(self.width if self.width > self.height else self.height)
             // 2
@@ -255,14 +254,6 @@ class MazeMLX:
                 x1 = x * line_len + line_len + margin
                 y1 = y * line_len + line_len + margin
 
-                if maze[y][x].get_north():
-                    self.put_line((x0, y0), (x1, y0))
-                if maze[y][x].get_est():
-                    self.put_line((x1, y0), (x1, y1))
-                if maze[y][x].get_south():
-                    self.put_line((x0, y1), (x1, y1))
-                if maze[y][x].get_west():
-                    self.put_line((x0, y0), (x0, y1))
                 if maze[y][x].value == 15:
                     self.put_block((x0, y0), (x1, y1))
 
@@ -308,6 +299,7 @@ class MazeMLX:
         return True
 
     def handle_key_press(self, keycode: int, amazing: AMazeIng) -> None:
+        print(keycode)
         if keycode == 49:
             self.restart_maze(amazing)
             self.print_path = False
@@ -320,6 +312,20 @@ class MazeMLX:
         if keycode == 52:
             self.close_loop(None)
 
+    def handle_key_press_mteriier(self, keycode: int, amazing: AMazeIng) -> None:
+        print(keycode)
+        if keycode == 38:
+            self.restart_maze(amazing)
+            self.print_path = False
+        if keycode == 233:
+            self.restart_path(amazing)
+            self.print_path = True if self.print_path is False else False
+        if keycode == 34:
+            self.print_path = False
+            self.color = next(self.color_gen)
+        if keycode == 39:
+            self.close_loop(None)
+
     def start(self, amazing: AMazeIng) -> None:
         self.restart_maze(amazing)
         self.shift_color()
@@ -327,7 +333,7 @@ class MazeMLX:
         self.mlx.mlx_loop_hook(self.mlx_ptr, self.draw_image, amazing)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_hook(
-            self.win_ptr, 2, 1 << 0, self.handle_key_press, amazing
+            self.win_ptr, 2, 1 << 0, self.handle_key_press_mteriier, amazing
         )
         self.mlx.mlx_loop(self.mlx_ptr)
 
