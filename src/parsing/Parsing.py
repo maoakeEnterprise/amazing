@@ -1,5 +1,6 @@
 from src.amaz_lib.MazeGenerator import DepthFirstSearch, Kruskal
 from src.amaz_lib.MazeSolver import AStar, DepthFirstSearchSolver
+from typing import Any
 
 
 class DataMaze:
@@ -13,14 +14,14 @@ class DataMaze:
         return data
 
     @staticmethod
-    def transform_data(data: str) -> dict:
+    def transform_data(data: str) -> dict[str, str]:
         tmp = data.split("\n")
         tmp2 = [value.split("=", 1) for value in tmp if "=" in value]
         data_t = {value[0]: value[1] for value in tmp2}
         return data_t
 
     @staticmethod
-    def verif_key_data(data: dict) -> None:
+    def verif_key_data(data: dict[str, str]) -> None:
         key_test = {
             "WIDTH",
             "HEIGHT",
@@ -41,11 +42,11 @@ class DataMaze:
             )
 
     @staticmethod
-    def convert_values(data: dict):
+    def convert_values(data: dict[str, str]) -> dict[str, Any]:
         key_int = {"WIDTH", "HEIGHT"}
         key_tuple = {"ENTRY", "EXIT"}
         key_bool = {"PERFECT"}
-        res: dict = {}
+        res: dict[str, Any] = {}
         for key in key_int:
             res.update({key: int(data[key])})
         for key in key_tuple:
@@ -60,13 +61,14 @@ class DataMaze:
         return res
 
     @staticmethod
-    def get_solver_generator(data: dict, entry: tuple, exit: tuple,
-                             perfect: bool) -> dict:
-        available_generator = {
+    def get_solver_generator(data: dict[str, str], entry: tuple[int, int],
+                             exit: tuple[int, int],
+                             perfect: bool) -> dict[str, Any]:
+        available_generator: dict[str, Any] = {
             "Kruskal": Kruskal,
             "DFS": DepthFirstSearch,
         }
-        available_solver = {
+        available_solver: dict[str, Any] = {
             "AStar": AStar,
             "DFS": DepthFirstSearchSolver
         }
@@ -77,7 +79,7 @@ class DataMaze:
         return res
 
     @staticmethod
-    def convert_tuple(data: str) -> tuple:
+    def convert_tuple(data: str) -> tuple[int, int]:
         data_t = data.split(",")
         if len(data_t) != 2:
             raise ValueError(
@@ -96,7 +98,7 @@ class DataMaze:
         return False
 
     @staticmethod
-    def get_data_maze(name_file: str) -> dict:
+    def get_data_maze(name_file: str) -> dict[str, Any]:
         try:
             data_str = DataMaze.get_file_data(name_file)
             data_dict = DataMaze.transform_data(data_str)
