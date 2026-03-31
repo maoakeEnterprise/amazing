@@ -1,4 +1,3 @@
-import pytest
 from amaz_lib.Cell import Cell
 
 
