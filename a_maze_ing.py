@@ -1,7 +1,7 @@
 from typing import Any
 from numpy.typing import NDArray
 from src.AMazeIng import AMazeIng
-from src.parsing import Parsing
+from src.parsing.Parsing import DataMaze as Parsing
 from mlx import Mlx
 import time
 
@@ -483,7 +483,7 @@ def main() -> None:
     mlx = None
     try:
         mlx = MazeMLX(1000, 1000)
-        config = Parsing.DataMaze.get_data_maze("config.txt")
+        config = Parsing.get_data_maze("config.txt")
         amazing = AMazeIng(**config)
         mlx.start(amazing)
         with open("test.txt", "w") as output:

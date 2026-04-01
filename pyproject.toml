@@ -24,3 +24,11 @@ explicit_package_bases = true
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[build-system]
+requires = ["setuptools>=78.1.0", "wheel>=0.45.1"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src/amaz_lib"}
+

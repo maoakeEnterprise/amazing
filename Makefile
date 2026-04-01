@@ -1,3 +1,7 @@
+build:
+	uv build --clear --wheel
+	cp dist/*.whl mazegen-1.0.0-py3-none-any.whl
+
 install:
 	uv sync
 	uv pip install mlx-2.2-py3-none-any.whl
@@ -12,7 +16,10 @@ debug:
 	uv pdb python3 a_maze_ing.py config.txt
 
 clean:
-	rm -rf __pycache__ .mypy_cache .venv
+	rm -rf */**__pycache__ __pycache__ .mypy_cache .venv dist build */**/*.egg-info *.egg-info
+
+fclean: clean
+	rm mazegen-1.0.0-py3-none-any.whl 
 
 lint:
 	uv run flake8 . --exclude=.venv
@@ -38,3 +45,5 @@ run_test:
 	uv run pytest
 mlx:
 	uv run python3 test.py
+
+.PHONY: build install run debug clean fclean lint lint-strict run_test
