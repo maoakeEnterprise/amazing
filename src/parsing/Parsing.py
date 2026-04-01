@@ -1,5 +1,5 @@
-from ..amaz_lib import DepthFirstSearch, Kruskal
-from ..amaz_lib import AStar, DepthFirstSearchSolver
+from ..mazegen import DepthFirstSearch, Kruskal
+from ..mazegen import AStar, DepthFirstSearchSolver
 from typing import Any
 
 

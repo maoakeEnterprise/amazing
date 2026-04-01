@@ -1,5 +1,5 @@
 [project]
-name = "A-Maze-ing"
+name = "mazegen"
 version = "0.1.0"
 description = "This is the way"
 readme = "README.md"
@@ -30,5 +30,8 @@ requires = ["setuptools>=78.1.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-package-dir = {"" = "src/amaz_lib"}
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
 

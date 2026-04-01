@@ -16,7 +16,7 @@ debug:
 	uv pdb python3 a_maze_ing.py config.txt
 
 clean:
-	rm -rf */**/__pycache__ __pycache__ .mypy_cache .venv dist build */**/*.egg-info *.egg-info test.txt
+	rm -rf */**/__pycache__ */__pycache__ __pycache__ .mypy_cache .venv dist build */**/*.egg-info */*.egg-info *.egg-info test.txt
 
 fclean: clean
 	rm mazegen-1.0.0-py3-none-any.whl 
