@@ -2,7 +2,7 @@ from typing import Generator
 from typing_extensions import Self
 from pydantic import BaseModel, Field, model_validator, ConfigDict
 
-from src.amaz_lib import Maze, MazeGenerator, MazeSolver
+from .amaz_lib import Maze, MazeGenerator, MazeSolver
 
 
 class AMazeIng(BaseModel):

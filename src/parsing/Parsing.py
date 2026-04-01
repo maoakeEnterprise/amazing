@@ -1,5 +1,5 @@
-from src.amaz_lib.MazeGenerator import DepthFirstSearch, Kruskal
-from src.amaz_lib.MazeSolver import AStar, DepthFirstSearchSolver
+from ..amaz_lib import DepthFirstSearch, Kruskal
+from ..amaz_lib import AStar, DepthFirstSearchSolver
 from typing import Any
 
 
