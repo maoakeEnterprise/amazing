@@ -1,8 +1,8 @@
 from typing import Any
+from numpy.typing import NDArray
 from src.AMazeIng import AMazeIng
 from src.parsing import Parsing
-from mlx import Mlx
-import numpy as np
+from mlx import Mlx  # type: ignore
 import time
 
 
@@ -27,7 +27,7 @@ class MazeMLX:
     def close(self) -> None:
         self.mlx.mlx_destroy_image(self.mlx_ptr, self.img_ptr)
 
-    def close_loop(self, _: Any):
+    def close_loop(self, _: Any) -> None:
         self.mlx.mlx_loop_exit(self.mlx_ptr)
 
     def clear_image(self) -> None:
@@ -47,7 +47,8 @@ class MazeMLX:
             "1: regen; 2: path; 3: color; 4: quit;",
         )
 
-    def put_pixel(self, x, y, color: list | None = None) -> None:
+    def put_pixel(self, x: int, y: int, color: list[Any] | None = None
+                  ) -> None:
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return
         offset = y * self.size_line + x * (self.bpp // 8)
@@ -69,7 +70,7 @@ class MazeMLX:
         self,
         start: tuple[int, int],
         end: tuple[int, int],
-        color: list | None = None,
+        color: list[Any] | None = None,
     ) -> None:
         sx, sy = start
         ex, ey = end
@@ -84,7 +85,7 @@ class MazeMLX:
         self,
         ul: tuple[int, int],
         dr: tuple[int, int],
-        color: list | None = None,
+        color: list[Any] | None = None,
     ) -> None:
         for y in range(min(ul[1], dr[1]), max(dr[1], ul[1])):
             self.put_line(
@@ -117,7 +118,7 @@ class MazeMLX:
             for color in colors:
                 yield color
 
-    def get_margin_line_len(self, maze: np.ndarray) -> tuple[int, int, int]:
+    def get_margin_line_len(self, maze: NDArray[Any]) -> tuple[int, int, int]:
         rows = len(maze)
         cols = len(maze[0])
 
@@ -131,7 +132,7 @@ class MazeMLX:
 
         return (line_len, margin_x, margin_y)
 
-    def update_maze(self, maze: np.ndarray) -> None:
+    def update_maze(self, maze: NDArray[Any]) -> None:
         self.clear_image()
 
         line_len, margin_x, margin_y = self.get_margin_line_len(maze)
@@ -201,7 +202,7 @@ class MazeMLX:
         self.put_block(ul, dr)
         return
 
-    def put_start_end(self, amazing: AMazeIng):
+    def put_start_end(self, amazing: AMazeIng) -> None:
         entry = amazing.entry
         exit = amazing.exit
         maze = amazing.maze.get_maze()
@@ -230,7 +231,8 @@ class MazeMLX:
         )
         self.put_block(ul, dr, [0x00, 0xFF, 0x40, 0x9F])
 
-    def draw_ft(self, maze: np.ndarray, color: list | None = None):
+    def draw_ft(self, maze: NDArray[Any], color: list[Any] | None = None
+                ) -> None:
         line_len, margin_x, margin_y = self.get_margin_line_len(maze)
 
         for y in range(len(maze)):
@@ -256,13 +258,13 @@ class MazeMLX:
             self.put_start_end(amazing)
         self.redraw_image()
 
-    def shift_color(self):
+    def shift_color(self) -> None:
         self.color_gen = self.random_color()
 
-    def shift_color_ft(self):
+    def shift_color_ft(self) -> None:
         self.color_gen_ft = self.random_color_ft()
 
-    def time_gen(self):
+    def time_gen(self) -> None:
         self.timer_gen = self.time_generator()
 
     def restart_maze(self, amazing: AMazeIng) -> None:
