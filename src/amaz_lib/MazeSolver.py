@@ -5,18 +5,41 @@ import numpy as np
 
 
 class MazeSolver(ABC):
+    """Define the common interface for maze-solving algorithms."""
+
     def __init__(self, start: tuple[int, int], end: tuple[int, int]) -> None:
+        """Initialize the maze solver.
+
+        Args:
+            start: Start coordinates using 1-based indexing.
+            end: End coordinates using 1-based indexing.
+        """
         self.start = (start[1] - 1, start[0] - 1)
         self.end = (end[1] - 1, end[0] - 1)
 
     @abstractmethod
     def solve(
         self, maze: Maze, height: int | None = None, width: int | None = None
-    ) -> str: ...
+    ) -> str:
+        """Solve the maze and return the path as direction letters.
+
+        Args:
+            maze: The maze to solve.
+            height: Optional maze height.
+            width: Optional maze width.
+
+        Returns:
+            A string representing the path using cardinal directions.
+        """
+        ...
 
 
 class AStar(MazeSolver):
+    """Solve a maze using the A* pathfinding algorithm."""
+
     class Node:
+        """Represent a node used during A* exploration."""
+
         def __init__(
             self,
             coordinate: tuple[int, int],
@@ -25,6 +48,15 @@ class AStar(MazeSolver):
             f: int,
             parent: Any,
         ) -> None:
+            """Initialize a search node.
+
+            Args:
+                coordinate: Coordinates of the node.
+                g: Cost from the start node.
+                h: Heuristic cost to the goal.
+                f: Total estimated cost.
+                parent: Parent node in the reconstructed path.
+            """
             self.coordinate = coordinate
             self.g = g
             self.h = h
@@ -32,13 +64,36 @@ class AStar(MazeSolver):
             self.parent = parent
 
         def __eq__(self, value: object, /) -> bool:
+            """Compare a node to a coordinate.
+
+            Args:
+                value: Object to compare with.
+
+            Returns:
+                ``True`` if the value equals the node coordinate, otherwise
+                ``False``.
+            """
             return value == self.coordinate
 
     def __init__(self, start: tuple[int, int], end: tuple[int, int]) -> None:
+        """Initialize the A* solver.
+
+        Args:
+            start: Start coordinates using 1-based indexing.
+            end: End coordinates using 1-based indexing.
+        """
         super().__init__(start, end)
         self.path = []
 
     def h(self, n: tuple[int, int]) -> int:
+        """Compute the Manhattan distance heuristic to the goal.
+
+        Args:
+            n: Coordinates of the current node.
+
+        Returns:
+            The heuristic distance to the end coordinate.
+        """
         return (
             max(n[0], self.end[0])
             - min(n[0], self.end[0])
@@ -52,6 +107,16 @@ class AStar(MazeSolver):
         actual: tuple[int, int],
         close: list,
     ) -> list[tuple[int, int]]:
+        """Return all reachable neighboring coordinates.
+
+        Args:
+            maze: Maze grid to inspect.
+            actual: Current coordinate.
+            close: List of already explored nodes.
+
+        Returns:
+            A list of reachable adjacent coordinates not yet closed.
+        """
         path = [
             (
                 (actual[0], actual[1] - 1)
@@ -89,6 +154,17 @@ class AStar(MazeSolver):
         return [p for p in path if p is not None]
 
     def get_path(self, maze: np.ndarray) -> list:
+        """Perform A* exploration until the destination is reached.
+
+        Args:
+            maze: Maze grid to solve.
+
+        Returns:
+            The closed list ending with the goal node.
+
+        Raises:
+            Exception: If no path can be found.
+        """
         open: list[AStar.Node] = []
         close: list[AStar.Node] = []
 
@@ -122,6 +198,17 @@ class AStar(MazeSolver):
         raise Exception("Path not found")
 
     def get_rev_dir(self, current: Node) -> str:
+        """Determine the direction taken from the parent to the current node.
+
+        Args:
+            current: Current node in the reconstructed path.
+
+        Returns:
+            A cardinal direction letter.
+
+        Raises:
+            Exception: If the parent-child relationship cannot be translated.
+        """
         if current.parent.coordinate == (
             current.coordinate[0],
             current.coordinate[1] - 1,
@@ -146,6 +233,14 @@ class AStar(MazeSolver):
             raise Exception("Translate error: AStar path not found")
 
     def translate(self, close: list) -> str:
+        """Translate a node chain into a path string.
+
+        Args:
+            close: Closed list ending with the goal node.
+
+        Returns:
+            A string of direction letters from start to end.
+        """
         current = close[-1]
         res = ""
         while True:
@@ -158,17 +253,48 @@ class AStar(MazeSolver):
     def solve(
         self, maze: Maze, height: int | None = None, width: int | None = None
     ) -> str:
+        """Solve the maze using A*.
+
+        Args:
+            maze: The maze to solve.
+            height: Unused optional maze height.
+            width: Unused optional maze width.
+
+        Returns:
+            A string representing the path using cardinal directions.
+        """
         path = self.get_path(maze.get_maze())
         return self.translate(path)
 
 
 class DepthFirstSearchSolver(MazeSolver):
+    """Solve a maze using depth-first search with backtracking."""
+
     def __init__(self, start, end):
+        """Initialize the depth-first search solver.
+
+        Args:
+            start: Start coordinates using 1-based indexing.
+            end: End coordinates using 1-based indexing.
+        """
         super().__init__(start, end)
 
     def solve(
         self, maze: Maze, height: int | None = None, width: int | None = None
     ) -> str:
+        """Solve the maze using depth-first search.
+
+        Args:
+            maze: The maze to solve.
+            height: Maze height.
+            width: Maze width.
+
+        Returns:
+            A string representing the path using cardinal directions.
+
+        Raises:
+            Exception: If no path can be found.
+        """
         path_str = ""
         visited = np.zeros((height, width), dtype=bool)
         path = list()
@@ -202,6 +328,17 @@ class DepthFirstSearchSolver(MazeSolver):
     def random_path(
         visited: np.ndarray, coord: tuple, maze: np.ndarray, h_w: tuple
     ) -> list:
+        """Return all valid unvisited directions from the current cell.
+
+        Args:
+            visited: Boolean array marking visited cells.
+            coord: Current coordinate.
+            maze: Maze grid to inspect.
+            h_w: Tuple containing maze height and width.
+
+        Returns:
+            A list of valid direction letters.
+        """
         random_p = []
         h, w = h_w
         y, x = coord
@@ -221,6 +358,14 @@ class DepthFirstSearchSolver(MazeSolver):
 
     @staticmethod
     def next_path(rand_path: list) -> str:
+        """Select the next move at random.
+
+        Args:
+            rand_path: List of available directions.
+
+        Returns:
+            A randomly selected direction.
+        """
         return np.random.choice(rand_path)
 
     @staticmethod
@@ -231,6 +376,18 @@ class DepthFirstSearchSolver(MazeSolver):
         h_w: tuple,
         move: list,
     ) -> list:
+        """Backtrack until a cell with an unexplored path is found.
+
+        Args:
+            path: Current path of visited coordinates.
+            visited: Boolean array marking visited cells.
+            maze: Maze grid to inspect.
+            h_w: Tuple containing maze height and width.
+            move: List of moves made so far.
+
+        Returns:
+            A tuple containing the updated path and move list.
+        """
         while path:
             last = path[-1]
             if DepthFirstSearchSolver.random_path(visited, last, maze, h_w):
@@ -241,6 +398,15 @@ class DepthFirstSearchSolver(MazeSolver):
 
     @staticmethod
     def next_cell(coord: tuple, next: str) -> tuple:
+        """Return the coordinates of the next cell in the given direction.
+
+        Args:
+            coord: Current coordinate.
+            next: Direction to move.
+
+        Returns:
+            The coordinates of the next cell.
+        """
         y, x = coord
         next_step = {"N": (-1, 0), "S": (1, 0), "W": (0, -1), "E": (0, 1)}
         add_y, add_x = next_step[next]

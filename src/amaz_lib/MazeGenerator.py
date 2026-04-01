@@ -6,7 +6,16 @@ import math
 
 
 class MazeGenerator(ABC):
+    """Define the common interface and helpers for maze generators."""
+
     def __init__(self, start: tuple, end: tuple, perfect: bool) -> None:
+        """Initialize the maze generator.
+
+        Args:
+            start: Starting cell coordinates, using 1-based indexing.
+            end: Ending cell coordinates, using 1-based indexing.
+            perfect: Whether to generate a perfect maze with no loops.
+        """
         self.start = (start[0] - 1, start[1] - 1)
         self.end = (end[0] - 1, end[1] - 1)
         self.perfect = perfect
@@ -14,10 +23,33 @@ class MazeGenerator(ABC):
     @abstractmethod
     def generator(
         self, height: int, width: int, seed: int | None = None
-    ) -> Generator[np.ndarray, None, np.ndarray]: ...
+    ) -> Generator[np.ndarray, None, np.ndarray]:
+        """Generate a maze step by step.
+
+        Args:
+            height: Number of rows in the maze.
+            width: Number of columns in the maze.
+            seed: Optional random seed for reproducibility.
+
+        Yields:
+            Intermediate maze states during generation.
+
+        Returns:
+            The final generated maze.
+        """
+        ...
 
     @staticmethod
     def get_cell_ft(width: int, height: int) -> set:
+        """Return the coordinates used to reserve the '42' pattern.
+
+        Args:
+            width: Number of columns in the maze.
+            height: Number of rows in the maze.
+
+        Returns:
+            A set of cell coordinates belonging to the reserved pattern.
+        """
         forty_two = set()
         y, x = (int(height / 2), int(width / 2))
         forty_two.add((y, x - 1))
@@ -41,23 +73,35 @@ class MazeGenerator(ABC):
         return forty_two
 
     @staticmethod
-    def unperfect_maze(width: int, height: int,
-                       maze: np.ndarray, forty_two: set | None,
-                       prob: float = 0.1
-                       ) -> Generator[np.ndarray, None, np.ndarray]:
-        directions = {
-            "N": (0, -1),
-            "S": (0, 1),
-            "W": (-1, 0),
-            "E": (1, 0)
-        }
+    def unperfect_maze(
+        width: int,
+        height: int,
+        maze: np.ndarray,
+        forty_two: set | None,
+        prob: float = 0.1,
+    ) -> Generator[np.ndarray, None, np.ndarray]:
+        """Add extra openings to transform a perfect maze into an imperfect one.
 
-        reverse = {
-            "N": "S",
-            "S": "N",
-            "W": "E",
-            "E": "W"
-        }
+        Random walls are removed while optionally preserving the reserved
+        ``forty_two`` area.
+
+        Args:
+            width: Number of columns in the maze.
+            height: Number of rows in the maze.
+            maze: The maze to modify.
+            forty_two: Optional set of reserved coordinates that must not be
+                altered.
+            prob: Probability of breaking an eligible wall.
+
+        Yields:
+            Intermediate maze states after each wall removal.
+
+        Returns:
+            The modified maze.
+        """
+        directions = {"N": (0, -1), "S": (0, 1), "W": (-1, 0), "E": (1, 0)}
+
+        reverse = {"N": "S", "S": "N", "W": "E", "E": "W"}
         min_break = 2
         while True:
             count = 0
@@ -68,8 +112,7 @@ class MazeGenerator(ABC):
                     for direc, (dx, dy) in directions.items():
                         nx, ny = x + dx, y + dy
                         if forty_two and (
-                            (y, x) in forty_two
-                            or (ny, nx) in forty_two
+                            (y, x) in forty_two or (ny, nx) in forty_two
                         ):
                             continue
                         if not (0 <= nx < width and 0 < ny < height):
@@ -81,9 +124,10 @@ class MazeGenerator(ABC):
                             cell = maze[y][x]
                             cell_n = maze[ny][nx]
                             cell = DepthFirstSearch.broken_wall(cell, direc)
-                            cell_n = DepthFirstSearch.broken_wall(cell_n,
-                                                                  reverse[
-                                                                    direc])
+                            cell_n = DepthFirstSearch.broken_wall(
+                                cell_n,
+                                reverse[direc],
+                            )
                             maze[y][x] = cell
                             maze[ny][nx] = cell_n
                             yield maze
@@ -93,19 +137,45 @@ class MazeGenerator(ABC):
 
 
 class Kruskal(MazeGenerator):
+    """Generate a maze using a Kruskal-based algorithm."""
 
     class Set:
+        """Represent a connected component of maze cells."""
+
         def __init__(self, cells: list[int]) -> None:
+            """Initialize a set of connected cells.
+
+            Args:
+                cells: List of cell indices belonging to the set.
+            """
             self.cells: list[int] = cells
 
     class Sets:
+        """Store all connected components used during generation."""
+
         def __init__(self, sets: list[Set]) -> None:
+            """Initialize the collection of connected components.
+
+            Args:
+                sets: List of disjoint cell sets.
+            """
             self.sets = sets
 
     @staticmethod
     def walls_to_maze(
         walls: np.ndarray, height: int, width: int
     ) -> np.ndarray:
+        """Convert a list of remaining walls into a maze grid.
+
+        Args:
+            walls: Collection of wall pairs between adjacent cells.
+            height: Number of rows in the maze.
+            width: Number of columns in the maze.
+
+        Returns:
+            A two-dimensional array of :class:`Cell` instances representing the
+            maze.
+        """
         maze: np.ndarray = np.array(
             [[Cell(value=0) for _ in range(width)] for _ in range(height)]
         )
@@ -132,6 +202,15 @@ class Kruskal(MazeGenerator):
 
     @staticmethod
     def is_in_same_set(sets: Sets, wall: tuple[int, int]) -> bool:
+        """Check whether both cells connected by a wall are in the same set.
+
+        Args:
+            sets: Current collection of connected components.
+            wall: Pair of adjacent cell indices.
+
+        Returns:
+            ``True`` if both cells belong to the same set, otherwise ``False``.
+        """
         a, b = wall
         for set in sets.sets:
             if a in set.cells and b in set.cells:
@@ -142,6 +221,15 @@ class Kruskal(MazeGenerator):
 
     @staticmethod
     def merge_sets(sets: Sets, wall: tuple[int, int]) -> None:
+        """Merge the two sets connected by the given wall.
+
+        Args:
+            sets: Current collection of connected components.
+            wall: Pair of adjacent cell indices.
+
+        Raises:
+            Exception: If the two corresponding sets cannot be found.
+        """
         a, b = wall
         base_set = None
         for i in range(len(sets.sets)):
@@ -163,6 +251,17 @@ class Kruskal(MazeGenerator):
         wall: tuple[int, int],
         cells_ft: None | set[tuple[int, int]],
     ) -> bool:
+        """Check whether a wall touches the reserved '42' pattern.
+
+        Args:
+            width: Number of columns in the maze.
+            wall: Pair of adjacent cell indices.
+            cells_ft: Reserved coordinates, or ``None``.
+
+        Returns:
+            ``True`` if either endpoint of the wall belongs to the reserved
+            pattern, otherwise ``False``.
+        """
         if cells_ft is None:
             return False
         s1 = (math.trunc(wall[0] / width), wall[0] % width)
@@ -172,6 +271,19 @@ class Kruskal(MazeGenerator):
     def generator(
         self, height: int, width: int, seed: int | None = None
     ) -> Generator[np.ndarray, None, np.ndarray]:
+        """Generate a maze using a Kruskal-based approach.
+
+        Args:
+            height: Number of rows in the maze.
+            width: Number of columns in the maze.
+            seed: Optional random seed for reproducibility.
+
+        Yields:
+            Intermediate maze states during generation.
+
+        Returns:
+            The final generated maze.
+        """
         cells_ft = None
         if height > 10 and width > 10:
             cells_ft = self.get_cell_ft(width, height)
@@ -208,8 +320,7 @@ class Kruskal(MazeGenerator):
         print(f"nb sets: {len(sets.sets)}")
         maze = self.walls_to_maze(walls, height, width)
         if self.perfect is False:
-            gen = Kruskal.unperfect_maze(width, height, maze,
-                                         cells_ft)
+            gen = Kruskal.unperfect_maze(width, height, maze, cells_ft)
             for res in gen:
                 maze = res
                 yield maze
@@ -217,7 +328,16 @@ class Kruskal(MazeGenerator):
 
 
 class DepthFirstSearch(MazeGenerator):
+    """Generate a maze using a depth-first search backtracking algorithm."""
+
     def __init__(self, start: bool, end: bool, perfect: bool) -> None:
+        """Initialize the depth-first search generator.
+
+        Args:
+            start: Starting cell coordinates, using 1-based indexing.
+            end: Ending cell coordinates, using 1-based indexing.
+            perfect: Whether to generate a perfect maze with no loops.
+        """
         self.start = (start[0] - 1, start[1] - 1)
         self.end = (end[0] - 1, end[1] - 1)
         self.perfect = perfect
@@ -226,6 +346,19 @@ class DepthFirstSearch(MazeGenerator):
     def generator(
         self, height: int, width: int, seed: int = None
     ) -> Generator[np.ndarray, None, np.ndarray]:
+        """Generate a maze using depth-first search.
+
+        Args:
+            height: Number of rows in the maze.
+            width: Number of columns in the maze.
+            seed: Optional random seed for reproducibility.
+
+        Yields:
+            Intermediate maze states during generation.
+
+        Returns:
+            The final generated maze.
+        """
         if seed is not None:
             np.random.seed(seed)
         maze = self.init_maze(width, height)
@@ -269,8 +402,12 @@ class DepthFirstSearch(MazeGenerator):
             maze[y][x] = self.broken_wall(maze[y][x], wall_r)
             yield maze
         if self.perfect is False:
-            gen = DepthFirstSearch.unperfect_maze(width, height, maze,
-                                                  self.forty_two)
+            gen = DepthFirstSearch.unperfect_maze(
+                width,
+                height,
+                maze,
+                self.forty_two,
+            )
             for res in gen:
                 maze = res
                 yield maze
@@ -278,6 +415,15 @@ class DepthFirstSearch(MazeGenerator):
 
     @staticmethod
     def init_maze(width: int, height: int) -> np.ndarray:
+        """Create a fully walled maze grid.
+
+        Args:
+            width: Number of columns in the maze.
+            height: Number of rows in the maze.
+
+        Returns:
+            A two-dimensional array of cells initialized with all walls present.
+        """
         maze = np.array(
             [[Cell(value=15) for _ in range(width)] for _ in range(height)]
         )
@@ -285,11 +431,31 @@ class DepthFirstSearch(MazeGenerator):
 
     @staticmethod
     def add_cell_visited(coord: tuple, path: set) -> list:
+        """Append a visited coordinate to the current traversal path.
+
+        Args:
+            coord: Coordinate of the visited cell.
+            path: Current traversal path.
+
+        Returns:
+            The updated path.
+        """
         path.append(coord)
         return path
 
     @staticmethod
     def random_cells(visited: np.array, coord: tuple, w_h: tuple) -> list:
+        """Return the list of unvisited neighboring directions.
+
+        Args:
+            visited: Boolean array marking visited cells.
+            coord: Current cell coordinate.
+            w_h: Tuple containing maze width and height.
+
+        Returns:
+            A list of direction strings among ``"N"``, ``"S"``, ``"W"``, and
+            ``"E"``.
+        """
         rand_cell = []
         x, y = coord
         width, height = w_h
@@ -309,10 +475,27 @@ class DepthFirstSearch(MazeGenerator):
 
     @staticmethod
     def next_step(rand_cell: list) -> str:
+        """Select the next direction at random.
+
+        Args:
+            rand_cell: List of candidate directions.
+
+        Returns:
+            A randomly selected direction.
+        """
         return np.random.choice(rand_cell)
 
     @staticmethod
     def broken_wall(cell: Cell, wall: str) -> Cell:
+        """Remove the specified wall from a cell.
+
+        Args:
+            cell: The cell to modify.
+            wall: Direction of the wall to remove.
+
+        Returns:
+            The modified cell.
+        """
         if wall == "N":
             cell.set_north(False)
         elif wall == "S":
@@ -325,16 +508,44 @@ class DepthFirstSearch(MazeGenerator):
 
     @staticmethod
     def next_cell(x: int, y: int, next: str) -> tuple:
+        """Return the coordinates of the adjacent cell in the given direction.
+
+        Args:
+            x: Current column index.
+            y: Current row index.
+            next: Direction to move.
+
+        Returns:
+            The coordinates of the next cell.
+        """
         next_step = {"N": (0, -1), "S": (0, 1), "W": (-1, 0), "E": (1, 0)}
         add_x, add_y = next_step[next]
         return (x + add_x, y + add_y)
 
     @staticmethod
     def reverse_path(direction: str) -> str:
+        """Return the opposite cardinal direction.
+
+        Args:
+            direction: Input direction.
+
+        Returns:
+            The opposite direction.
+        """
         return {"N": "S", "S": "N", "W": "E", "E": "W"}[direction]
 
     @staticmethod
     def back_on_step(path: list, w_h: tuple, visited: np.ndarray) -> list:
+        """Backtrack through the path until a cell with unvisited neighbors is found.
+
+        Args:
+            path: Current traversal path.
+            w_h: Tuple containing maze width and height.
+            visited: Boolean array marking visited cells.
+
+        Returns:
+            The truncated path after backtracking.
+        """
         while path:
             last = path[-1]
             if DepthFirstSearch.random_cells(visited, last, w_h):
@@ -346,6 +557,15 @@ class DepthFirstSearch(MazeGenerator):
     def lock_cell_ft(
         visited: np.ndarray, forty_two: set[tuple[int]]
     ) -> np.ndarray:
+        """Mark the reserved '42' pattern cells as already visited.
+
+        Args:
+            visited: Boolean array marking visited cells.
+            forty_two: Set of reserved cell coordinates.
+
+        Returns:
+            The updated visited array.
+        """
         tab = [cell for cell in forty_two]
         for cell in tab:
             visited[cell] = True

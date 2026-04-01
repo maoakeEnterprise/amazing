@@ -7,7 +7,15 @@ import time
 
 
 class MazeMLX:
+    """Render, animate, and interact with a maze using an MLX window."""
+
     def __init__(self, height: int, width: int) -> None:
+        """Initialize the MLX renderer and create the window and image buffer.
+
+        Args:
+            height: Height of the rendering area in pixels.
+            width: Width of the rendering area in pixels.
+        """
         self.mlx = Mlx()
         self.height = height
         self.width = width
@@ -25,15 +33,23 @@ class MazeMLX:
         self.generator = None
 
     def close(self) -> None:
+        """Destroy the image used by the renderer."""
         self.mlx.mlx_destroy_image(self.mlx_ptr, self.img_ptr)
 
     def close_loop(self, _: Any):
+        """Stop the MLX event loop.
+
+        Args:
+            _: Unused callback argument.
+        """
         self.mlx.mlx_loop_exit(self.mlx_ptr)
 
     def clear_image(self) -> None:
+        """Clear the image buffer."""
         self.buf[:] = b"\x00" * len(self.buf)
 
     def redraw_image(self) -> None:
+        """Redraw the window contents and display the control help text."""
         self.mlx.mlx_clear_window(self.mlx_ptr, self.win_ptr)
         self.mlx.mlx_put_image_to_window(
             self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0
@@ -48,6 +64,14 @@ class MazeMLX:
         )
 
     def put_pixel(self, x, y, color: list | None = None) -> None:
+        """Draw a single pixel into the image buffer.
+
+        Args:
+            x: Horizontal pixel position.
+            y: Vertical pixel position.
+            color: Optional RGBA color list. If omitted, the current renderer
+                color is used.
+        """
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return
         offset = y * self.size_line + x * (self.bpp // 8)
@@ -71,6 +95,13 @@ class MazeMLX:
         end: tuple[int, int],
         color: list | None = None,
     ) -> None:
+        """Draw a horizontal or vertical line.
+
+        Args:
+            start: Starting pixel coordinates.
+            end: Ending pixel coordinates.
+            color: Optional RGBA color list.
+        """
         sx, sy = start
         ex, ey = end
         if sy == ey:
@@ -86,6 +117,13 @@ class MazeMLX:
         dr: tuple[int, int],
         color: list | None = None,
     ) -> None:
+        """Draw a filled rectangular block.
+
+        Args:
+            ul: Upper-left corner coordinates.
+            dr: Lower-right corner coordinates.
+            color: Optional RGBA color list.
+        """
         for y in range(min(ul[1], dr[1]), max(dr[1], ul[1])):
             self.put_line(
                 (min(ul[0], dr[0]), y), (max(ul[0], dr[0]), y), color
@@ -93,6 +131,11 @@ class MazeMLX:
 
     @staticmethod
     def random_color_ft() -> Any:
+        """Yield colors in a repeating sequence for the reserved pattern.
+
+        Yields:
+            RGBA color lists.
+        """
         colors = [
             [0xFF, 0xBF, 0x00, 0xFF],  # blue
             [0x00, 0xFF, 0x40, 0xFF],  # green
@@ -105,6 +148,11 @@ class MazeMLX:
 
     @staticmethod
     def random_color() -> Any:
+        """Yield colors in a repeating sequence for maze rendering.
+
+        Yields:
+            RGBA color lists.
+        """
         colors = [
             [0xFF, 0x00, 0xFF, 0xFF],  # pink
             [0x00, 0xFF, 0xFF, 0xFF],  # yellow
@@ -118,6 +166,15 @@ class MazeMLX:
                 yield color
 
     def get_margin_line_len(self, maze: np.ndarray) -> tuple[int, int, int]:
+        """Compute the cell size and margins for centering the maze.
+
+        Args:
+            maze: Maze grid to render.
+
+        Returns:
+            A tuple containing the cell side length, horizontal margin, and
+            vertical margin.
+        """
         rows = len(maze)
         cols = len(maze[0])
 
@@ -132,6 +189,11 @@ class MazeMLX:
         return (line_len, margin_x, margin_y)
 
     def update_maze(self, maze: np.ndarray) -> None:
+        """Render the maze walls into the image buffer.
+
+        Args:
+            maze: Maze grid to render.
+        """
         self.clear_image()
 
         line_len, margin_x, margin_y = self.get_margin_line_len(maze)
@@ -152,6 +214,15 @@ class MazeMLX:
                     self.put_line((x0, y0), (x0, y1))
 
     def put_path(self, amazing: AMazeIng) -> Any:
+        """Animate the solution path inside the maze.
+
+        Args:
+            amazing: Maze container with generation and solving logic.
+
+        Yields:
+            Control after each path segment so the animation can be rendered
+            progressively.
+        """
         path = amazing.solve_path()
         print(path)
         actual = amazing.entry
@@ -202,6 +273,11 @@ class MazeMLX:
         return
 
     def put_start_end(self, amazing: AMazeIng):
+        """Draw highlighted blocks for the maze entry and exit.
+
+        Args:
+            amazing: Maze container with current maze data.
+        """
         entry = amazing.entry
         exit = amazing.exit
         maze = amazing.maze.get_maze()
@@ -231,6 +307,12 @@ class MazeMLX:
         self.put_block(ul, dr, [0x00, 0xFF, 0x40, 0x9F])
 
     def draw_ft(self, maze: np.ndarray, color: list | None = None):
+        """Draw filled cells corresponding to the reserved fully walled pattern.
+
+        Args:
+            maze: Maze grid to inspect.
+            color: Optional RGBA color list.
+        """
         line_len, margin_x, margin_y = self.get_margin_line_len(maze)
 
         for y in range(len(maze)):
@@ -243,6 +325,11 @@ class MazeMLX:
                     self.put_block((x0, y0), (x1, y1), color)
 
     def draw_image(self, amazing: AMazeIng) -> None:
+        """Main rendering callback used by the MLX loop.
+
+        Args:
+            amazing: Maze container to render.
+        """
         if self.render_maze(amazing):
             if self.path_printer and self.print_path:
                 if self.render_path():
@@ -257,27 +344,50 @@ class MazeMLX:
         self.redraw_image()
 
     def shift_color(self):
+        """Reset the maze color generator."""
         self.color_gen = self.random_color()
 
     def shift_color_ft(self):
+        """Reset the reserved-pattern color generator."""
         self.color_gen_ft = self.random_color_ft()
 
     def time_gen(self):
+        """Reset the timing generator used for animation pacing."""
         self.timer_gen = self.time_generator()
 
     def restart_maze(self, amazing: AMazeIng) -> None:
+        """Restart maze generation.
+
+        Args:
+            amazing: Maze container providing the generation generator.
+        """
         self.generator = amazing.generate()
 
     def time_generator(self) -> Any:
+        """Yield regularly with a fixed delay for animation timing.
+
+        Yields:
+            ``None`` at each step after sleeping.
+        """
         yield
         while True:
             time.sleep(0.3)
             yield
 
     def restart_path(self, amazing: AMazeIng) -> None:
+        """Restart solution path animation.
+
+        Args:
+            amazing: Maze container providing the solution path.
+        """
         self.path_printer = self.put_path(amazing)
 
     def render_path(self) -> bool:
+        """Advance the path animation by one step.
+
+        Returns:
+            ``True`` if the path animation is complete, otherwise ``False``.
+        """
         try:
             next(self.path_printer)
             time.sleep(0.03)
@@ -287,6 +397,14 @@ class MazeMLX:
         return True
 
     def render_maze(self, amazing: AMazeIng) -> bool:
+        """Advance maze generation by one step and redraw it.
+
+        Args:
+            amazing: Maze container being generated.
+
+        Returns:
+            ``True`` if maze generation is complete, otherwise ``False``.
+        """
         try:
             next(self.generator)
             self.update_maze(amazing.maze.get_maze())
@@ -296,6 +414,12 @@ class MazeMLX:
         return True
 
     def handle_key_press(self, keycode: int, amazing: AMazeIng) -> None:
+        """Handle keyboard input for one keycode mapping.
+
+        Args:
+            keycode: Key code received from MLX.
+            amazing: Maze container to update or render.
+        """
         if keycode == 49:
             self.restart_maze(amazing)
             self.print_path = False
@@ -308,8 +432,15 @@ class MazeMLX:
         if keycode == 52:
             self.close_loop(None)
 
-    def handle_key_press_mteriier(self, keycode: int,
-                                  amazing: AMazeIng) -> None:
+    def handle_key_press_mteriier(
+        self, keycode: int, amazing: AMazeIng
+    ) -> None:
+        """Handle keyboard input for an alternative keycode mapping.
+
+        Args:
+            keycode: Key code received from MLX.
+            amazing: Maze container to update or render.
+        """
         if keycode == 38:
             self.restart_maze(amazing)
             self.print_path = False
@@ -323,6 +454,11 @@ class MazeMLX:
             self.close_loop(None)
 
     def start(self, amazing: AMazeIng) -> None:
+        """Start the MLX rendering loop.
+
+        Args:
+            amazing: Maze container to generate, solve, and display.
+        """
         self.restart_maze(amazing)
         self.shift_color()
         self.shift_color_ft()
@@ -330,12 +466,13 @@ class MazeMLX:
         self.mlx.mlx_loop_hook(self.mlx_ptr, self.draw_image, amazing)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_hook(
-            self.win_ptr, 2, 1 << 0, self.handle_key_press_mteriier, amazing
+            self.win_ptr, 2, 1 << 0, self.handle_key_press, amazing
         )
         self.mlx.mlx_loop(self.mlx_ptr)
 
 
 def main() -> None:
+    """Run the maze application."""
     mlx = None
     try:
         mlx = MazeMLX(1000, 1000)

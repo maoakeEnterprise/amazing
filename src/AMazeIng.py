@@ -6,6 +6,8 @@ from src.amaz_lib import Maze, MazeGenerator, MazeSolver
 
 
 class AMazeIng(BaseModel):
+    """Represent a complete maze configuration, generation, and solving setup."""
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     width: int = Field(ge=4)
@@ -20,6 +22,14 @@ class AMazeIng(BaseModel):
 
     @model_validator(mode="after")
     def check_entry_exit(self) -> Self:
+        """Validate that entry and exit coordinates fit within maze bounds.
+
+        Returns:
+            The validated model instance.
+
+        Raises:
+            ValueError: If entry or exit coordinates exceed maze dimensions.
+        """
         if self.entry[0] > self.width or self.entry[1] > self.height:
             raise ValueError("Entry coordinates exceed the maze size")
         if self.exit[0] > self.width or self.exit[1] > self.height:
@@ -27,15 +37,35 @@ class AMazeIng(BaseModel):
         return self
 
     def generate(self) -> Generator[Maze, None, None]:
+        """Generate the maze step by step.
+
+        The internal maze state is updated at each generation step.
+
+        Yields:
+            The current maze state after each generation step.
+        """
         for array in self.generator.generator(self.height, self.width):
             self.maze.set_maze(array)
             yield self.maze
         return
 
     def solve_path(self) -> str:
+        """Solve the current maze and return the path string.
+
+        Returns:
+            A string of direction letters representing the solution path.
+        """
         return self.solver.solve(self.maze, self.height, self.width)
 
     def __str__(self) -> str:
+        """Return a string representation of the maze and its solution.
+
+        The output includes the maze, entry coordinates, exit coordinates, and
+        the computed solution path.
+
+        Returns:
+            A formatted string representation of the maze data.
+        """
         res = self.maze.__str__()
         res += "\n"
         res += f"{self.entry[0]},{self.entry[1]}\n"
