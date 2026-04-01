@@ -1,5 +1,5 @@
-from amaz_lib.MazeGenerator import DepthFirstSearch
-from amaz_lib.Cell import Cell
+from mazegen import DepthFirstSearch
+from mazegen import Cell
 import numpy as np
 
 

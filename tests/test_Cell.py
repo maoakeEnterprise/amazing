@@ -1,4 +1,4 @@
-from amaz_lib.Cell import Cell
+from mazegen import Cell
 
 
 def test_cell_setter_getter() -> None:

@@ -1,6 +1,6 @@
 import numpy
-from amaz_lib.Cell import Cell
-from amaz_lib.Maze import Maze
+from mazegen import Cell
+from mazegen import Maze
 
 
 def test_maze_setter_getter() -> None:

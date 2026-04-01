@@ -1,6 +1,6 @@
-from amaz_lib.Cell import Cell
+from mazegen import Cell
 import numpy as np
-from amaz_lib import AStar, Maze
+from mazegen import AStar, Maze
 
 
 def test_solver() -> None:

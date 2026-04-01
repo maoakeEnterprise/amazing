@@ -1,5 +1,5 @@
 import numpy
-from amaz_lib.MazeGenerator import DepthFirstSearch
+from mazegen import DepthFirstSearch
 
 
 class TestMazeGenerator:
