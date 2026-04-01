@@ -2,7 +2,7 @@ from typing import Any
 from numpy.typing import NDArray
 from src.AMazeIng import AMazeIng
 from src.parsing import Parsing
-from mlx import Mlx  # type: ignore
+from mlx import Mlx
 import time
 
 

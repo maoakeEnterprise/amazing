@@ -16,11 +16,15 @@ clean:
 
 lint:
 	uv run flake8 . --exclude=.venv
-	uv run mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs src
+	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs tests
+	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs a_maze_ing.py
 
 lint-strict:
 	uv run flake8 . --exclude=.venv
-	uv run mypy . --strict
+	uv run env PYTHONPATH=src python3 -m mypy --strict src
+	uv run env PYTHONPATH=src python3 -m mypy --strict tests
+	uv run env PYTHONPATH=src python3 -m mypy --strict a_maze_ing.py
 
 run_test_parsing:
 	PYTHONPATH=src uv run pytest tests/test_parsing.py
