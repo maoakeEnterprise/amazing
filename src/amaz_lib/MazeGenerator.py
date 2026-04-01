@@ -84,7 +84,8 @@ class MazeGenerator(ABC):
         forty_two: set[tuple[int, int]] | None,
         prob: float = 0.1,
     ) -> Generator[NDArray[Any], None, NDArray[Any]]:
-        """Add extra openings to transform a perfect maze into an imperfect one.
+        """Add extra openings to transform a perfect maze into an imperfect
+        one.
 
         Random walls are removed while optionally preserving the reserved
             ``forty_two`` area.
@@ -116,7 +117,9 @@ class MazeGenerator(ABC):
                         continue
                     for direc, (dx, dy) in directions.items():
                         nx, ny = x + dx, y + dy
-                        if forty_two and ((y, x) in forty_two or (ny, nx) in forty_two):
+                        if forty_two and (
+                            (y, x) in forty_two or (ny, nx) in forty_two
+                        ):
                             continue
                         if not (0 <= nx < width and 0 < ny < height):
                             continue
@@ -241,7 +244,9 @@ class Kruskal(MazeGenerator):
                 a in sets.sets[i].cells or b in sets.sets[i].cells
             ):
                 base_set = sets.sets[i]
-            elif base_set and (a in sets.sets[i].cells or b in sets.sets[i].cells):
+            elif base_set and (
+                a in sets.sets[i].cells or b in sets.sets[i].cells
+            ):
                 base_set.cells += sets.sets[i].cells
                 sets.sets.pop(i)
                 return
@@ -426,9 +431,12 @@ class DepthFirstSearch(MazeGenerator):
             height: Number of rows in the maze.
 
         Returns:
-            A two-dimensional array of cells initialized with all walls present.
+            A two-dimensional array of cells initialized with all
+            walls present.
         """
-        maze = np.array([[Cell(value=15) for _ in range(width)] for _ in range(height)])
+        maze = np.array(
+            [[Cell(value=15) for _ in range(width)] for _ in range(height)]
+        )
         return maze
 
     @staticmethod
@@ -546,7 +554,8 @@ class DepthFirstSearch(MazeGenerator):
         w_h: tuple[int, int],
         visited: NDArray[Any],
     ) -> list[tuple[int, int]]:
-        """Backtrack through the path until a cell with unvisited neighbors is found.
+        """Backtrack through the path until a cell with unvisited neighbors
+        is found.
 
         Args:
             path: Current traversal path.

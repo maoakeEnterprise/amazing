@@ -309,7 +309,8 @@ class MazeMLX:
     def draw_ft(
         self, maze: NDArray[Any], color: list[Any] | None = None
     ) -> None:
-        """Draw filled cells corresponding to the reserved fully walled pattern.
+        """Draw filled cells corresponding to the reserved fully
+            walled pattern.
 
         Args:
             maze: Maze grid to inspect.

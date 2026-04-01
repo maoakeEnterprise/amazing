@@ -6,7 +6,9 @@ from .amaz_lib import Maze, MazeGenerator, MazeSolver
 
 
 class AMazeIng(BaseModel):
-    """Represent a complete maze configuration, generation, and solving setup."""
+    """Represent a complete maze configuration, generation,
+    and solving setup.
+    """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

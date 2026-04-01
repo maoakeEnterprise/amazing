@@ -79,8 +79,8 @@ class DataMaze:
             data: Raw configuration dictionary with string values.
 
         Returns:
-            A dictionary containing converted values and instantiated solver and
-            generator objects.
+            A dictionary containing converted values and instantiated
+            solver and generator objects.
         """
         key_int = {"WIDTH", "HEIGHT"}
         key_tuple = {"ENTRY", "EXIT"}
