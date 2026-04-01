@@ -15,7 +15,9 @@ def test_maze_setter_getter() -> None:
     )
 
     maze.set_maze(test)
-    assert numpy.array_equal(maze.get_maze(), test) is True
+    m = maze.get_maze()
+    assert m is not None
+    assert numpy.array_equal(m, test) is True
 
 
 def test_maze_str() -> None:
