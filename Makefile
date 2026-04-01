@@ -23,13 +23,17 @@ fclean: clean
 
 lint:
 	uv run flake8 . --exclude=.venv
-	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs src
+	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs -p mazegen
+	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs -p parsing
+	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs src/AMazeIng.py
 	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs tests
 	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs a_maze_ing.py
 
 lint-strict:
 	uv run flake8 . --exclude=.venv
-	uv run env PYTHONPATH=src python3 -m mypy --strict src
+	uv run env PYTHONPATH=src python3 -m mypy --strict -p mazegen
+	uv run env PYTHONPATH=src python3 -m mypy --strict src/AMazeIng.py
+	uv run env PYTHONPATH=src python3 -m mypy --strict -p parsing
 	uv run env PYTHONPATH=src python3 -m mypy --strict tests
 	uv run env PYTHONPATH=src python3 -m mypy --strict a_maze_ing.py
 

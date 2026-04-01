@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Generator, Any
 import numpy as np
 from numpy.typing import NDArray
-from mazegen import Cell
+from mazegen.Cell import Cell
 import math
 import random
 

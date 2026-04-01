@@ -1,7 +1,7 @@
 from typing import Any
 from numpy.typing import NDArray
-from src.AMazeIng import AMazeIng
-from src.parsing.Parsing import DataMaze as Parsing
+from AMazeIng import AMazeIng
+from parsing.Parsing import DataMaze as Parsing
 from mlx import Mlx
 import time
 
