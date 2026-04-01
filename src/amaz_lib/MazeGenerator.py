@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
-from typing import Generator, Set
+from typing import Generator, Any
 import numpy as np
+from numpy.typing import NDArray
 from .Cell import Cell
 import math
+import random
 
 
 class MazeGenerator(ABC):
-    def __init__(self, start: tuple, end: tuple, perfect: bool) -> None:
+    def __init__(self, start: tuple[int, int], end: tuple[int, int],
+                 perfect: bool) -> None:
         self.start = (start[0] - 1, start[1] - 1)
         self.end = (end[0] - 1, end[1] - 1)
         self.perfect = perfect
@@ -14,10 +17,10 @@ class MazeGenerator(ABC):
     @abstractmethod
     def generator(
         self, height: int, width: int, seed: int | None = None
-    ) -> Generator[np.ndarray, None, np.ndarray]: ...
+    ) -> Generator[NDArray[Any], None, NDArray[Any]]: ...
 
     @staticmethod
-    def get_cell_ft(width: int, height: int) -> set:
+    def get_cell_ft(width: int, height: int) -> set[tuple[int, int]]:
         forty_two = set()
         y, x = (int(height / 2), int(width / 2))
         forty_two.add((y, x - 1))
@@ -42,9 +45,10 @@ class MazeGenerator(ABC):
 
     @staticmethod
     def unperfect_maze(width: int, height: int,
-                       maze: np.ndarray, forty_two: set | None,
+                       maze: NDArray[Any],
+                       forty_two: set[tuple[int, int]] | None,
                        prob: float = 0.1
-                       ) -> Generator[np.ndarray, None, np.ndarray]:
+                       ) -> Generator[NDArray[Any], None, NDArray[Any]]:
         directions = {
             "N": (0, -1),
             "S": (0, 1),
@@ -94,19 +98,19 @@ class MazeGenerator(ABC):
 
 class Kruskal(MazeGenerator):
 
-    class Set:
+    class KruskalSet:
         def __init__(self, cells: list[int]) -> None:
             self.cells: list[int] = cells
 
     class Sets:
-        def __init__(self, sets: list[Set]) -> None:
+        def __init__(self, sets: list['Kruskal.KruskalSet']) -> None:
             self.sets = sets
 
     @staticmethod
     def walls_to_maze(
-        walls: np.ndarray, height: int, width: int
-    ) -> np.ndarray:
-        maze: np.ndarray = np.array(
+        walls: list[tuple[int, int]], height: int, width: int
+    ) -> NDArray[Any]:
+        maze: NDArray[Any] = np.array(
             [[Cell(value=0) for _ in range(width)] for _ in range(height)]
         )
         for wall in walls:
@@ -171,7 +175,7 @@ class Kruskal(MazeGenerator):
 
     def generator(
         self, height: int, width: int, seed: int | None = None
-    ) -> Generator[np.ndarray, None, np.ndarray]:
+    ) -> Generator[NDArray[Any], None, NDArray[Any]]:
         cells_ft = None
         if height > 10 and width > 10:
             cells_ft = self.get_cell_ft(width, height)
@@ -180,7 +184,7 @@ class Kruskal(MazeGenerator):
 
         if seed is not None:
             np.random.seed(seed)
-        sets = self.Sets([self.Set([i]) for i in range(height * width)])
+        sets = self.Sets([self.KruskalSet([i]) for i in range(height * width)])
         walls = []
         for h in range(height):
             for w in range(width - 1):
@@ -217,28 +221,29 @@ class Kruskal(MazeGenerator):
 
 
 class DepthFirstSearch(MazeGenerator):
-    def __init__(self, start: bool, end: bool, perfect: bool) -> None:
+    def __init__(self, start: tuple[int, int], end: tuple[int, int],
+                 perfect: bool) -> None:
         self.start = (start[0] - 1, start[1] - 1)
         self.end = (end[0] - 1, end[1] - 1)
         self.perfect = perfect
-        self.forty_two: set | None = None
+        self.forty_two: set[tuple[int, int]] | None = None
 
     def generator(
-        self, height: int, width: int, seed: int = None
-    ) -> Generator[np.ndarray, None, np.ndarray]:
+        self, height: int, width: int, seed: int | None = None
+    ) -> Generator[NDArray[Any], None, NDArray[Any]]:
         if seed is not None:
             np.random.seed(seed)
         maze = self.init_maze(width, height)
         if width > 9 and height > 9:
             self.forty_two = self.get_cell_ft(width, height)
-        visited = np.zeros((height, width), dtype=bool)
+        visited: NDArray[np.object_] = np.zeros((height, width), dtype=bool)
         if (
             self.forty_two
             and self.start not in self.forty_two
             and self.end not in self.forty_two
         ):
             visited = self.lock_cell_ft(visited, self.forty_two)
-        path = list()
+        path: list[tuple[int, int]] = list()
         w_h = (width, height)
         coord = (0, 0)
         x, y = coord
@@ -277,20 +282,22 @@ class DepthFirstSearch(MazeGenerator):
         return maze
 
     @staticmethod
-    def init_maze(width: int, height: int) -> np.ndarray:
+    def init_maze(width: int, height: int) -> NDArray[Any]:
         maze = np.array(
             [[Cell(value=15) for _ in range(width)] for _ in range(height)]
         )
         return maze
 
     @staticmethod
-    def add_cell_visited(coord: tuple, path: set) -> list:
+    def add_cell_visited(coord: tuple[int, int], path: list[tuple[int, int]]
+                         ) -> list[tuple[int, int]]:
         path.append(coord)
         return path
 
     @staticmethod
-    def random_cells(visited: np.array, coord: tuple, w_h: tuple) -> list:
-        rand_cell = []
+    def random_cells(visited: NDArray[Any], coord: tuple[int, int],
+                     w_h: tuple[int, int]) -> list[str]:
+        rand_cell: list[str] = []
         x, y = coord
         width, height = w_h
 
@@ -308,8 +315,8 @@ class DepthFirstSearch(MazeGenerator):
         return rand_cell
 
     @staticmethod
-    def next_step(rand_cell: list) -> str:
-        return np.random.choice(rand_cell)
+    def next_step(rand_cell: list[str]) -> str:
+        return random.choice(rand_cell)
 
     @staticmethod
     def broken_wall(cell: Cell, wall: str) -> Cell:
@@ -324,7 +331,7 @@ class DepthFirstSearch(MazeGenerator):
         return cell
 
     @staticmethod
-    def next_cell(x: int, y: int, next: str) -> tuple:
+    def next_cell(x: int, y: int, next: str) -> tuple[int, int]:
         next_step = {"N": (0, -1), "S": (0, 1), "W": (-1, 0), "E": (1, 0)}
         add_x, add_y = next_step[next]
         return (x + add_x, y + add_y)
@@ -334,7 +341,8 @@ class DepthFirstSearch(MazeGenerator):
         return {"N": "S", "S": "N", "W": "E", "E": "W"}[direction]
 
     @staticmethod
-    def back_on_step(path: list, w_h: tuple, visited: np.ndarray) -> list:
+    def back_on_step(path: list[tuple[int, int]], w_h: tuple[int, int],
+                     visited: NDArray[Any]) -> list[tuple[int, int]]:
         while path:
             last = path[-1]
             if DepthFirstSearch.random_cells(visited, last, w_h):
@@ -344,8 +352,8 @@ class DepthFirstSearch(MazeGenerator):
 
     @staticmethod
     def lock_cell_ft(
-        visited: np.ndarray, forty_two: set[tuple[int]]
-    ) -> np.ndarray:
+        visited: NDArray[Any], forty_two: set[tuple[int, int]]
+    ) -> NDArray[Any]:
         tab = [cell for cell in forty_two]
         for cell in tab:
             visited[cell] = True

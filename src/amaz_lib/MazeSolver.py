@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from .Maze import Maze
 from typing import Any
 import numpy as np
+from numpy.typing import NDArray
+import random
 
 
 class MazeSolver(ABC):
@@ -36,7 +38,6 @@ class AStar(MazeSolver):
 
     def __init__(self, start: tuple[int, int], end: tuple[int, int]) -> None:
         super().__init__(start, end)
-        self.path = []
 
     def h(self, n: tuple[int, int]) -> int:
         return (
@@ -48,9 +49,9 @@ class AStar(MazeSolver):
 
     def get_paths(
         self,
-        maze: np.ndarray,
+        maze: NDArray[Any],
         actual: tuple[int, int],
-        close: list,
+        close: list['Node'],
     ) -> list[tuple[int, int]]:
         path = [
             (
@@ -88,7 +89,7 @@ class AStar(MazeSolver):
         ]
         return [p for p in path if p is not None]
 
-    def get_path(self, maze: np.ndarray) -> list:
+    def get_path(self, maze: NDArray[Any]) -> list['Node']:
         open: list[AStar.Node] = []
         close: list[AStar.Node] = []
 
@@ -145,7 +146,7 @@ class AStar(MazeSolver):
         else:
             raise Exception("Translate error: AStar path not found")
 
-    def translate(self, close: list) -> str:
+    def translate(self, close: list['Node']) -> str:
         current = close[-1]
         res = ""
         while True:
@@ -158,28 +159,35 @@ class AStar(MazeSolver):
     def solve(
         self, maze: Maze, height: int | None = None, width: int | None = None
     ) -> str:
-        path = self.get_path(maze.get_maze())
+        maze_arr = maze.get_maze()
+        if maze_arr is None:
+            raise Exception("Maze is not initialized")
+        path: list[AStar.Node] = self.get_path(maze_arr)
         return self.translate(path)
 
 
 class DepthFirstSearchSolver(MazeSolver):
-    def __init__(self, start, end):
+    def __init__(self, start: tuple[int, int], end: tuple[int, int]):
         super().__init__(start, end)
 
     def solve(
         self, maze: Maze, height: int | None = None, width: int | None = None
     ) -> str:
         path_str = ""
-        visited = np.zeros((height, width), dtype=bool)
-        path = list()
-        move = list()
+        if height is None or width is None:
+            raise Exception("We need Height and Width in the arg")
+        visited: NDArray[Any] = np.zeros((height, width), dtype=bool)
+        path: list[tuple[int, int]] = list()
+        move: list[str] = list()
         maze_s = maze.get_maze()
+        if maze_s is None:
+            raise Exception("Maze is not initializef")
         coord = self.start
-        h_w = (height, width)
+        h_w: tuple[int, int] = (height, width)
         while coord != self.end:
             visited[coord] = True
             path.append(coord)
-            rand_p = self.random_path(visited, coord, maze_s, h_w)
+            rand_p: list[str] = self.random_path(visited, coord, maze_s, h_w)
 
             if not rand_p:
                 path, move = self.back_on_step(
@@ -199,9 +207,9 @@ class DepthFirstSearchSolver(MazeSolver):
         return path_str
 
     @staticmethod
-    def random_path(
-        visited: np.ndarray, coord: tuple, maze: np.ndarray, h_w: tuple
-    ) -> list:
+    def random_path(visited: NDArray[Any], coord: tuple[int, int],
+                    maze: NDArray[Any], h_w: tuple[int, int]
+                    ) -> list[str]:
         random_p = []
         h, w = h_w
         y, x = coord
@@ -220,17 +228,17 @@ class DepthFirstSearchSolver(MazeSolver):
         return random_p
 
     @staticmethod
-    def next_path(rand_path: list) -> str:
-        return np.random.choice(rand_path)
+    def next_path(rand_path: list[str]) -> str:
+        return random.choice(rand_path)
 
     @staticmethod
     def back_on_step(
-        path: list,
-        visited: np.ndarray,
-        maze: np.ndarray,
-        h_w: tuple,
-        move: list,
-    ) -> list:
+        path: list[tuple[int, int]],
+        visited: NDArray[Any],
+        maze: NDArray[Any],
+        h_w: tuple[int, int],
+        move: list[str],
+    ) -> tuple[list[Any], list[Any]]:
         while path:
             last = path[-1]
             if DepthFirstSearchSolver.random_path(visited, last, maze, h_w):
@@ -240,7 +248,7 @@ class DepthFirstSearchSolver(MazeSolver):
         return path, move
 
     @staticmethod
-    def next_cell(coord: tuple, next: str) -> tuple:
+    def next_cell(coord: tuple[int, int], next: str) -> tuple[int, int]:
         y, x = coord
         next_step = {"N": (-1, 0), "S": (1, 0), "W": (0, -1), "E": (0, 1)}
         add_y, add_x = next_step[next]

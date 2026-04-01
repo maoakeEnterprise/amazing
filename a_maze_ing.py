@@ -330,7 +330,7 @@ class MazeMLX:
         self.mlx.mlx_loop_hook(self.mlx_ptr, self.draw_image, amazing)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self.close_loop, None)
         self.mlx.mlx_hook(
-            self.win_ptr, 2, 1 << 0, self.handle_key_press_mteriier, amazing
+            self.win_ptr, 2, 1 << 0, self.handle_key_press, amazing
         )
         self.mlx.mlx_loop(self.mlx_ptr)
 
