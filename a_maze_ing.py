@@ -21,8 +21,6 @@ class MazeMLX:
         self.buf, self.bpp, self.size_line, self.format = (
             self.mlx.mlx_get_data_addr(self.img_ptr)
         )
-        self.path_printer = None
-        self.generator = None
 
     def close(self) -> None:
         self.mlx.mlx_destroy_image(self.mlx_ptr, self.img_ptr)
@@ -245,16 +243,19 @@ class MazeMLX:
                     self.put_block((x0, y0), (x1, y1), color)
 
     def draw_image(self, amazing: AMazeIng) -> None:
+        maze = amazing.maze.get_maze()
         if self.render_maze(amazing):
-            if self.path_printer and self.print_path:
+            if self.print_path:
                 if self.render_path():
                     color = next(self.color_gen_ft)
-                    self.draw_ft(amazing.maze.get_maze(), color)
+                    if maze is not None:
+                        self.draw_ft(maze, color)
                     next(self.timer_gen)
             else:
                 self.time_gen()
-                self.update_maze(amazing.maze.get_maze())
-                self.draw_ft(amazing.maze.get_maze())
+                if maze is not None:
+                    self.update_maze(maze)
+                    self.draw_ft(maze)
             self.put_start_end(amazing)
         self.redraw_image()
 
@@ -290,8 +291,10 @@ class MazeMLX:
 
     def render_maze(self, amazing: AMazeIng) -> bool:
         try:
+            maze = amazing.maze.get_maze()
             next(self.generator)
-            self.update_maze(amazing.maze.get_maze())
+            if maze is not None:
+                self.update_maze(maze)
             return False
         except StopIteration:
             pass
