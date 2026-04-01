@@ -1,6 +1,6 @@
 from typing import Any
 from src.AMazeIng import AMazeIng
-from src.parsing import Parsing
+from src.parsing.Parsing import DataMaze as Parsing
 from mlx import Mlx
 import numpy as np
 import time
@@ -308,8 +308,9 @@ class MazeMLX:
         if keycode == 52:
             self.close_loop(None)
 
-    def handle_key_press_mteriier(self, keycode: int,
-                                  amazing: AMazeIng) -> None:
+    def handle_key_press_mteriier(
+        self, keycode: int, amazing: AMazeIng
+    ) -> None:
         if keycode == 38:
             self.restart_maze(amazing)
             self.print_path = False
@@ -339,7 +340,7 @@ def main() -> None:
     mlx = None
     try:
         mlx = MazeMLX(1000, 1000)
-        config = Parsing.DataMaze.get_data_maze("config.txt")
+        config = Parsing.get_data_maze("config.txt")
         amazing = AMazeIng(**config)
         mlx.start(amazing)
         with open("test.txt", "w") as output:
