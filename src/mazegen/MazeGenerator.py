@@ -327,7 +327,6 @@ class Kruskal(MazeGenerator):
                     len(sets.sets) == 19 and cells_ft is not None
                 ):
                     break
-        print(f"nb sets: {len(sets.sets)}")
         maze = self.walls_to_maze(walls, height, width)
         if self.perfect is False:
             gen = Kruskal.unperfect_maze(width, height, maze, cells_ft)
@@ -382,9 +381,6 @@ class DepthFirstSearch(MazeGenerator):
             and self.start not in self.forty_two
             and self.end not in self.forty_two
         ):
-            print(self.start)
-            print(self.end)
-            print(self.forty_two)
             visited = self.lock_cell_ft(visited, self.forty_two)
         else:
             print(

@@ -224,7 +224,6 @@ class MazeMLX:
             progressively.
         """
         path = amazing.solve_path()
-        print(path)
         actual = amazing.entry
         actual = (actual[0] - 1, actual[1] - 1)
         maze = amazing.maze.get_maze()
