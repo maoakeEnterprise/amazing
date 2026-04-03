@@ -483,7 +483,7 @@ def main() -> None:
     """Run the maze application."""
     mlx = None
     try:
-        mlx = MazeMLX(1000, 1000)
+        mlx = MazeMLX(1600, 2000)
         config = Parsing.get_data_maze("config.txt")
         amazing = AMazeIng(**config)
         mlx.start(amazing)

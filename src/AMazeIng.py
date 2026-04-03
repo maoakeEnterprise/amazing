@@ -12,8 +12,8 @@ class AMazeIng(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    width: int = Field(ge=4)
-    height: int = Field(ge=4)
+    width: int = Field(ge=4, le=100)
+    height: int = Field(ge=4, le=100)
     entry: tuple[int, int]
     exit: tuple[int, int]
     output_file: str = Field(min_length=3)
