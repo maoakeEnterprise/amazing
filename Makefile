@@ -13,7 +13,7 @@ run_windows:
 	.venv\Scripts\python -m a_maze_ing config.txt
 
 debug:
-	uv pdb python3 a_maze_ing.py config.txt
+	uv run python3 -m pdb a_maze_ing.py config.txt
 
 clean:
 	rm -rf */**/__pycache__ */__pycache__ __pycache__ */.mypy_cache .mypy_cache .venv dist build */**/*.egg-info */*.egg-info *.egg-info test.txt
