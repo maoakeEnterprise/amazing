@@ -62,14 +62,12 @@ class DataMaze:
             "GENERATOR",
             "SOLVER",
         }
-        set_key = {key for key in data.keys()}
-        if len(set_key) != len(key_test):
-            raise KeyError("Missing some data the len do not correspond")
-        res_key = {key for key in set_key if key not in key_test}
-        if len(res_key) != 0:
-            raise KeyError(
-                "Some Key " f"do not correspond the keys: {res_key}"
-            )
+        i = 0
+        for key in data:
+            if key in key_test:
+                i += 1
+        if len(key_test) != i:
+            raise Exception("Some mandatory key not provide")
 
     @staticmethod
     def convert_values(data: dict[str, str]) -> dict[str, Any]:
@@ -88,6 +86,10 @@ class DataMaze:
         res: dict[str, Any] = {}
         for key in key_int:
             res.update({key: int(data[key])})
+        try:
+            res.update({"SEED": int(data["SEED"])})
+        except KeyError:
+            pass
         for key in key_tuple:
             res.update({key: DataMaze.convert_tuple(data[key])})
         for key in key_bool:

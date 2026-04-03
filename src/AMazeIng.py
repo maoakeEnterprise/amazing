@@ -21,6 +21,7 @@ class AMazeIng(BaseModel):
     maze: Maze = Field(default=Maze(None))
     generator: MazeGenerator
     solver: MazeSolver
+    seed: int | None = Field(default=None)
 
     @model_validator(mode="after")
     def check_entry_exit(self) -> Self:
@@ -48,7 +49,9 @@ class AMazeIng(BaseModel):
         Yields:
             The current maze state after each generation step.
         """
-        for array in self.generator.generator(self.height, self.width):
+        for array in self.generator.generator(
+            self.height, self.width, self.seed
+        ):
             self.maze.set_maze(array)
             yield self.maze
         return

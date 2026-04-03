@@ -369,7 +369,7 @@ class DepthFirstSearch(MazeGenerator):
             The final generated maze.
         """
         if seed is not None:
-            np.random.seed(seed)
+            random.seed(seed)
         maze = self.init_maze(width, height)
         if width > 10 and height > 10:
             self.forty_two = self.get_cell_ft(width, height)

@@ -6,12 +6,4 @@ OUTPUT_FILE=con
 PERFECT=True
 GENERATOR=DFS
 SOLVER=AStar
-salut
-#
-#
-#
-#
-#
-#
-#
-##
+SEED=168431
