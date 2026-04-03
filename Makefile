@@ -21,7 +21,7 @@ clean:
 fclean: clean
 	rm mazegen-1.0.0-py3-none-any.whl 
 
-lint:
+lint: install
 	uv run flake8 . --exclude=.venv
 	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs -p mazegen
 	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs -p parsing
@@ -29,7 +29,7 @@ lint:
 	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs tests
 	uv run env PYTHONPATH=src python3 -m mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs a_maze_ing.py
 
-lint-strict:
+lint-strict: install
 	uv run flake8 . --exclude=.venv
 	uv run env PYTHONPATH=src python3 -m mypy --strict -p mazegen
 	uv run env PYTHONPATH=src python3 -m mypy --strict src/AMazeIng.py
