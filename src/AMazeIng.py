@@ -67,6 +67,7 @@ class AMazeIng(BaseModel):
         return self.solver.solve(self.maze, self.height, self.width)
 
     def export_maze(self) -> None:
+        """Export maze, entry, exit and resolved path in output_file"""
         with open(self.output_file, "w") as file:
             file.write(self.__str__())
 
