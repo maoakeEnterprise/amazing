@@ -215,5 +215,3 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 test.txt
-
-mazegen-1.0.0-py3-none-any.whl
