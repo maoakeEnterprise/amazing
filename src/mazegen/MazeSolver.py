@@ -84,7 +84,8 @@ class AStar(MazeSolver):
             start: Start coordinates using 1-based indexing.
             end: End coordinates using 1-based indexing.
         """
-        super().__init__(start, end)
+        self.start = (start[0] - 1, start[1] - 1)
+        self.end = (end[0] - 1, end[1] - 1)
 
     def h(self, n: tuple[int, int]) -> int:
         """Compute the Manhattan distance heuristic to the goal.
@@ -196,6 +197,8 @@ class AStar(MazeSolver):
                         to_check,
                     )
                 )
+                if path == self.end:
+                    break
         raise Exception("Path not found")
 
     def get_rev_dir(self, current: Node) -> str:
