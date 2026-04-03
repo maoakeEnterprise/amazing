@@ -20,8 +20,8 @@ class MazeGenerator(ABC):
             end: Ending cell coordinates, using 1-based indexing.
             perfect: Whether to generate a perfect maze with no loops.
         """
-        self.start = (start[0] - 1, start[1] - 1)
-        self.end = (end[0] - 1, end[1] - 1)
+        self.start = (start[1] - 1, start[0] - 1)
+        self.end = (end[1] - 1, end[0] - 1)
         self.perfect = perfect
 
     @abstractmethod
@@ -347,8 +347,8 @@ class DepthFirstSearch(MazeGenerator):
             end: Ending cell coordinates, using 1-based indexing.
             perfect: Whether to generate a perfect maze with no loops.
         """
-        self.start = (start[0] - 1, start[1] - 1)
-        self.end = (end[0] - 1, end[1] - 1)
+        self.start = (start[1] - 1, start[0] - 1)
+        self.end = (end[1] - 1, end[0] - 1)
         self.perfect = perfect
         self.forty_two: set[tuple[int, int]] | None = None
 
@@ -379,6 +379,9 @@ class DepthFirstSearch(MazeGenerator):
             and self.start not in self.forty_two
             and self.end not in self.forty_two
         ):
+            print(self.start)
+            print(self.end)
+            print(self.forty_two)
             visited = self.lock_cell_ft(visited, self.forty_two)
         path: list[tuple[int, int]] = list()
         w_h = (width, height)
