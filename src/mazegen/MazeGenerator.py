@@ -295,6 +295,9 @@ class Kruskal(MazeGenerator):
         if height > 10 and width > 10:
             cells_ft = self.get_cell_ft(width, height)
         if cells_ft and (self.start in cells_ft or self.end in cells_ft):
+            print(
+                "Forty two will not be display. Entry or exit set in the ft logo"
+            )
             cells_ft = None
 
         if seed is not None:
@@ -383,6 +386,10 @@ class DepthFirstSearch(MazeGenerator):
             print(self.end)
             print(self.forty_two)
             visited = self.lock_cell_ft(visited, self.forty_two)
+        else:
+            print(
+                "Forty two will not be display. Entry or exit set in the ft logo"
+            )
         path: list[tuple[int, int]] = list()
         w_h = (width, height)
         coord = (0, 0)
