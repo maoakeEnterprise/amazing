@@ -371,7 +371,7 @@ class DepthFirstSearch(MazeGenerator):
         if seed is not None:
             np.random.seed(seed)
         maze = self.init_maze(width, height)
-        if width > 9 and height > 9:
+        if width > 10 and height > 10:
             self.forty_two = self.get_cell_ft(width, height)
         visited: NDArray[np.object_] = np.zeros((height, width), dtype=bool)
         if (

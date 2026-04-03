@@ -36,6 +36,8 @@ class AMazeIng(BaseModel):
             raise ValueError("Entry coordinates exceed the maze size")
         if self.exit[0] > self.width or self.exit[1] > self.height:
             raise ValueError("Exit coordinates exceed the maze size")
+        if self.entry == self.exit:
+            raise ValueError("Entry and Exit coordinates cant be the same")
         return self
 
     def generate(self) -> Generator[Maze, None, None]:
