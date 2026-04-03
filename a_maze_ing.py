@@ -486,8 +486,7 @@ def main() -> None:
         config = Parsing.get_data_maze("config.txt")
         amazing = AMazeIng(**config)
         mlx.start(amazing)
-        with open("test.txt", "w") as output:
-            output.write(amazing.__str__())
+        amazing.export_maze()
     except Exception as err:
         print(err)
     finally:

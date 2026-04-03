@@ -66,6 +66,10 @@ class AMazeIng(BaseModel):
         """
         return self.solver.solve(self.maze, self.height, self.width)
 
+    def export_maze(self) -> None:
+        with open(self.output_file, "w") as file:
+            file.write(self.__str__())
+
     def __str__(self) -> str:
         """Return a string representation of the maze and its solution.
 
