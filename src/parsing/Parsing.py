@@ -1,3 +1,4 @@
+from os.path import split
 from mazegen import DepthFirstSearch, Kruskal
 from mazegen import AStar, DepthFirstSearchSolver
 from typing import Any
@@ -184,6 +185,20 @@ class DataMaze:
         return False
 
     @staticmethod
+    def test_file_format(file: str) -> None:
+        with open(file) as data_str:
+            for line in data_str:
+                if len(line.split("=", 1)) != 2:
+                    raise Exception(
+                        "config file format not respected. excpected format : "
+                        "KEY=VALUE"
+                    )
+                if not line.split("=", 1)[1] or line.split("=", 1)[1] == "\n":
+                    raise Exception(
+                        f"VALUE not provide for {line.split('=')[0]} key"
+                    )
+
+    @staticmethod
     def get_data_maze(name_file: str) -> dict[str, Any]:
         """Load, validate, and convert maze configuration data from a file.
 
@@ -194,6 +209,7 @@ class DataMaze:
             A dictionary of validated configuration values with lowercase keys.
         """
         try:
+            DataMaze.test_file_format(name_file)
             data_str = DataMaze.get_file_data(name_file)
             data_dict = DataMaze.transform_data(data_str)
             DataMaze.verif_key_data(data_dict)
