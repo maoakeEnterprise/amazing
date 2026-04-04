@@ -12,8 +12,8 @@ class AMazeIng(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    width: int = Field(ge=4, le=100)
-    height: int = Field(ge=4, le=100)
+    width: int = Field(ge=5, le=100)
+    height: int = Field(ge=5, le=100)
     entry: tuple[int, int]
     exit: tuple[int, int]
     output_file: str = Field(min_length=3)
@@ -39,7 +39,11 @@ class AMazeIng(BaseModel):
             raise ValueError("Exit coordinates exceed the maze size")
         if self.entry == self.exit:
             raise ValueError("Entry and Exit coordinates cant be the same")
-        if self.width <= 10 or self.height <= 10:
+        if self.exit[0] < 1 or self.exit[1] < 1:
+            raise ValueError("Exit coordinates to low")
+        if self.entry[0] < 1 or self.entry[1] < 1:
+            raise ValueError("Entry coordinates to low")
+        if self.width < 9 or self.height < 7:
             print("Height or width to low for disply forty two logo")
         return self
 

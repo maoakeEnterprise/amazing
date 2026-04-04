@@ -1,3 +1,5 @@
+import os
+import sys
 from typing import Any
 from numpy.typing import NDArray
 from AMazeIng import AMazeIng
@@ -482,9 +484,10 @@ def main() -> None:
     """Run the maze application."""
     mlx = None
     try:
-        mlx = MazeMLX(1600, 2000)
+        os.system("cls" if os.name == "nt" else "clear")
         config = Parsing.get_data_maze("config.txt")
         amazing = AMazeIng(**config)
+        mlx = MazeMLX(1600, 2000)
         mlx.start(amazing)
         amazing.export_maze()
     except Exception as err:

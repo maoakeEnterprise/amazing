@@ -7,6 +7,21 @@ class DataMaze:
     """Provide helper methods to load and validate maze configuration data."""
 
     @staticmethod
+    def test_output_file(name_file: str) -> None:
+        try:
+            with open(name_file, "r"):
+                while True:
+                    res = input(
+                        f"{name_file} already exist. Data will be erased. Continue ? (y/n)"
+                    )
+                    if res == "y":
+                        break
+                    elif res == "n":
+                        raise Exception("")
+        except FileNotFoundError:
+            return
+
+    @staticmethod
     def get_file_data(name_file: str) -> str:
         """Read and return the contents of a configuration file.
 
@@ -38,7 +53,11 @@ class DataMaze:
             A dictionary mapping configuration keys to their string values.
         """
         tmp = data.split("\n")
-        tmp2 = [value.split("=", 1) for value in tmp if "=" in value]
+        tmp2 = [
+            value.split("=", 1)
+            for value in tmp
+            if not value.startswith("#") and "=" in value
+        ]
         data_t = {value[0]: value[1] for value in tmp2}
         return data_t
 
@@ -64,6 +83,8 @@ class DataMaze:
         }
         i = 0
         for key in data:
+            if key == "OUTPUT_FILE":
+                DataMaze.test_output_file(data[key])
             if key in key_test:
                 i += 1
         if len(key_test) != i:
@@ -187,6 +208,8 @@ class DataMaze:
     def test_file_format(file: str) -> None:
         with open(file) as data_str:
             for line in data_str:
+                if line.startswith("#"):
+                    continue
                 if len(line.split("=", 1)) != 2:
                     raise Exception(
                         "config file format not respected. excpected format : "

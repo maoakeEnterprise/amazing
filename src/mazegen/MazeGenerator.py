@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Generator, Any
+from mazegen import Maze
 import numpy as np
 from numpy.typing import NDArray
 from mazegen.Cell import Cell
@@ -105,10 +106,24 @@ class MazeGenerator(ABC):
             The modified maze.
         """
 
+        def enough_wall(cell: Cell) -> bool:
+            nb_wall = 0
+            if cell.get_est():
+                nb_wall += 1
+            if cell.get_north():
+                nb_wall += 1
+            if cell.get_west():
+                nb_wall += 1
+            if cell.get_south():
+                nb_wall += 1
+            if nb_wall == 3:
+                return True
+            return False
+
         directions = {"N": (0, -1), "S": (0, 1), "W": (-1, 0), "E": (1, 0)}
 
         reverse = {"N": "S", "S": "N", "W": "E", "E": "W"}
-        min_break = 2
+        min_break = 1
         while True:
             count = 0
             for y in range(height):
@@ -125,7 +140,9 @@ class MazeGenerator(ABC):
                             continue
                         if direc in ["S", "E"]:
                             continue
-                        if np.random.random() < prob:
+                        if not enough_wall(maze[y][x]):
+                            continue
+                        else:
                             count += 1
                             cell = maze[y][x]
                             cell_n = maze[ny][nx]
@@ -136,8 +153,8 @@ class MazeGenerator(ABC):
                             )
                             maze[y][x] = cell
                             maze[ny][nx] = cell_n
-                            yield maze
-            if count > min_break:
+                        yield maze
+            if count >= min_break:
                 break
         return maze
 
@@ -292,7 +309,7 @@ class Kruskal(MazeGenerator):
             The final generated maze.
         """
         cells_ft = None
-        if height > 10 and width > 10:
+        if height >= 7 and width >= 9:
             cells_ft = self.get_cell_ft(width, height)
         if cells_ft and (self.start in cells_ft or self.end in cells_ft):
             print(
@@ -374,7 +391,7 @@ class DepthFirstSearch(MazeGenerator):
         if seed is not None:
             random.seed(seed)
         maze = self.init_maze(width, height)
-        if width > 10 and height > 10:
+        if width >= 9 and height >= 7:
             self.forty_two = self.get_cell_ft(width, height)
         visited: NDArray[np.object_] = np.zeros((height, width), dtype=bool)
         if (
