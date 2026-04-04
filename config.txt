@@ -5,4 +5,4 @@ EXIT=4,5
 OUTPUT_FILE=con.txt
 PERFECT=False
 GENERATOR=Kruskal
-SOLVER=AStar
+Solver=AStar

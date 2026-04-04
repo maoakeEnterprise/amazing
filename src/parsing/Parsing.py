@@ -58,7 +58,7 @@ class DataMaze:
             for value in tmp
             if not value.startswith("#") and "=" in value
         ]
-        data_t = {value[0]: value[1] for value in tmp2}
+        data_t = {value[0].upper(): value[1] for value in tmp2}
         return data_t
 
     @staticmethod
@@ -83,7 +83,7 @@ class DataMaze:
         }
         i = 0
         for key in data:
-            if key == "OUTPUT_FILE":
+            if key.upper() == "OUTPUT_FILE":
                 DataMaze.test_output_file(data[key])
             if key in key_test:
                 i += 1
