@@ -1,5 +1,4 @@
 import os
-import sys
 from typing import Any
 from numpy.typing import NDArray
 from AMazeIng import AMazeIng

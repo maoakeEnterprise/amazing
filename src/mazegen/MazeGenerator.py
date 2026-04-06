@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Generator, Any
-from mazegen import Maze
 import numpy as np
 from numpy.typing import NDArray
 from mazegen.Cell import Cell

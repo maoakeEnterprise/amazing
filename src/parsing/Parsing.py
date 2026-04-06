@@ -12,7 +12,8 @@ class DataMaze:
             with open(name_file, "r"):
                 while True:
                     res = input(
-                        f"{name_file} already exist. Data will be erased. Continue ? (y/n)"
+                        f"{name_file} already exist. Data will"
+                        " be erased. Continue ? (y/n)"
                     )
                     if res == "y":
                         break
